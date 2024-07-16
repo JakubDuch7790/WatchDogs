@@ -1,0 +1,6 @@
+@WatchDogs_HostAddress = http://localhost:5222
+
+GET {{WatchDogs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
