@@ -24,8 +24,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore WatchDogs/WatchDogs.sln
+      run: dotnet restore src/WatchDogs.Application/WatchDogs.sln
     - name: Build
-      run: dotnet build WatchDogs/WatchDogs.sln --no-restore
+      run: dotnet build src/WatchDogs.Application/WatchDogs.sln --no-restore
     - name: Test
-      run: dotnet test WatchDogs/WatchDogs.sln --no-build --verbosity normal
+      run: dotnet test src/WatchDogs.Application/WatchDogs.sln --no-build --verbosity normal
