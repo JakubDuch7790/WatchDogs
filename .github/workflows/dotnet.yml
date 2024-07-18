@@ -18,13 +18,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: List directory contents
+      run: |
+        echo "Listing root directory contents"
+        ls -la
+        echo "Listing WatchDogs directory contents"
+        ls -la WatchDogs
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore ./WatchDogs.sln
+      run: dotnet restore WatchDogs/WatchDogs.sln
     - name: Build
-      run: dotnet build ./WatchDogs.sln --no-restore
+      run: dotnet build WatchDogs/WatchDogs.sln --no-restore
     - name: Test
-      run: dotnet test ./WatchDogs.sln --no-build --verbosity normal
+      run: dotnet test WatchDogs/WatchDogs.sln --no-build --verbosity normal
