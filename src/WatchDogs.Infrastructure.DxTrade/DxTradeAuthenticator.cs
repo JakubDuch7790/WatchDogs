@@ -4,15 +4,15 @@ using Microsoft.Extensions.Options;
 
 namespace Infrastructure.DxTrade
 {
-    public class Auth : AuthenticateDX
+    public class DxTradeAuthenticator : IDxTradeAuthenticator
     {
         private readonly DxTradeConnectionOptions _connectionOptions;
-        public Auth(IOptions<DxTradeConnectionOptions> configuration)
+        public DxTradeAuthenticator(IOptions<DxTradeConnectionOptions> configuration)
         {
             _connectionOptions = configuration.Value;
         }
 
-        public void Login()
+        public Task AuthenticateAsync()
         {
             throw new NotImplementedException();
         }
