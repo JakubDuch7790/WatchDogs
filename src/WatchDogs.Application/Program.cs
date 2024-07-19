@@ -13,7 +13,11 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddHttpClient();
+
+
+builder.Services.AddHttpClient("myClient", client => {
+    client.BaseAddress = new Uri("https://dxtrade.ftmo.com/dxsca-web/");
+});
 
 var app = builder.Build();
 
