@@ -3,10 +3,7 @@
 
 using Contracts;
 using Infrastructure.DxTrade;
-using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http;
-using System;
-using Microsoft.Extensions.Options;
+using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,16 +16,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHttpClient("DxTradeAuthenticatorClient", client => {
-    client.BaseAddress = new Uri("https://dxtrade.ftmo.com/dxsca-web/");
+
+builder.Services.AddHttpClient("myClient", client => {
+    client.BaseAddress = new Uri("https://dxtrade.ftmo.com/api/auth/");
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+    client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+    client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(new ProductHeaderValue("User-Agent")));
 });
 
-//builder.Services.AddTransient<IDxTradeAuthenticator, DxTradeAuthenticator>();
 builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
-
-
-//builder.Services.AddHttpClient<IDxTradeAuthenticator, DxTradeAuthenticator>(client =>
-//    client.BaseAddress = new Uri("https://dxtrade.ftmo.com/dxsca-web/"));
 
 var app = builder.Build();
 
@@ -54,6 +51,14 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var serviceScope = app.Services.CreateScope())
+{
+    var services = serviceScope.ServiceProvider;
+
+    var authenticator = services.GetRequiredService<IDxTradeAuthenticator>();
+    await authenticator.AuthenticateAsync();
+}
 
 app.Run();
 
