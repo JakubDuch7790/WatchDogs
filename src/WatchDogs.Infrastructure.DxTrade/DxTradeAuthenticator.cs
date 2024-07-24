@@ -39,7 +39,15 @@ namespace Infrastructure.DxTrade
 
                 if (response.IsSuccessStatusCode)
                 {
-                    string sessionToken = GetSessionToken(response.Headers);
+                    //string sessionToken = GetSessionToken(response.Headers);
+
+                    //Which option is better?
+
+                    //var sessionToken = new SessionTokenManager { SessionToken = GetSessionToken(response.Headers) };
+
+                    var sessionToken1 = new SessionTokenManager();
+
+                    sessionToken1.AddSessionToken(GetSessionToken(response.Headers));
                 }
 
                 else
