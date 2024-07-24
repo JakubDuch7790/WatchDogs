@@ -13,13 +13,15 @@ namespace Infrastructure.DxTrade
         private const string SessionTokenHeaderName = "JSESSIONID";
 
         private readonly IHttpClientFactory _httpClientFactory;
-
         private readonly DxTradeConnectionOptions _connectionOptions;
+        private SessionTokenManager _sessionToken;
+
 
         public DxTradeAuthenticator(IOptions<DxTradeConnectionOptions> configuration, IHttpClientFactory httpClientFactory)
         {
             _connectionOptions = configuration.Value;
             _httpClientFactory = httpClientFactory;
+            _sessionToken = new SessionTokenManager();
         }
 
         public async Task AuthenticateAsync()
@@ -41,13 +43,11 @@ namespace Infrastructure.DxTrade
                 {
                     //string sessionToken = GetSessionToken(response.Headers);
 
-                    //Which option is better?
+                    var sessionToken = new SessionTokenManager();
 
-                    //var sessionToken = new SessionTokenManager { SessionToken = GetSessionToken(response.Headers) };
+                    sessionToken.AddSessionToken(GetSessionToken(response.Headers));
 
-                    var sessionToken1 = new SessionTokenManager();
-
-                    sessionToken1.AddSessionToken(GetSessionToken(response.Headers));
+                    _sessionToken = sessionToken;
                 }
 
                 else
