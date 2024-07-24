@@ -26,7 +26,7 @@ builder.Services.AddHttpClient("DxTradeAuthenticationClient", client => {
 });
 
 builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
-builder.Services.AddSingleton<SessionTokenManager>();
+builder.Services.AddSingleton<InMemorySessionTokenStorage>();
 
 var app = builder.Build();
 

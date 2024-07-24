@@ -14,14 +14,14 @@ namespace Infrastructure.DxTrade
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly DxTradeConnectionOptions _connectionOptions;
-        private SessionTokenManager _sessionToken;
+        private InMemorySessionTokenStorage _sessionToken;
 
 
         public DxTradeAuthenticator(IOptions<DxTradeConnectionOptions> configuration, IHttpClientFactory httpClientFactory)
         {
             _connectionOptions = configuration.Value;
             _httpClientFactory = httpClientFactory;
-            _sessionToken = new SessionTokenManager();
+            _sessionToken = new InMemorySessionTokenStorage();
         }
 
         public async Task AuthenticateAsync()
@@ -43,11 +43,12 @@ namespace Infrastructure.DxTrade
                 {
                     //string sessionToken = GetSessionToken(response.Headers);
 
-                    var sessionToken = new SessionTokenManager();
+                    var sessionToken = new InMemorySessionTokenStorage();
 
-                    sessionToken.AddSessionToken(GetSessionToken(response.Headers));
+                    await sessionToken.SetSessionTokenAsync(GetSessionToken(response.Headers));
 
                     _sessionToken = sessionToken;
+
                 }
 
                 else
