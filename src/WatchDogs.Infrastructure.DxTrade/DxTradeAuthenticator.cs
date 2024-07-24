@@ -1,6 +1,7 @@
 ﻿using Contracts;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 
@@ -23,37 +24,54 @@ namespace Infrastructure.DxTrade
 
         public async Task AuthenticateAsync()
         {
-            //TODO: rename the client to something like DxTradeAuthenticationClient, rename it in Program.cs as well
-            using var client = _httpClientFactory.CreateClient("myClient");
+            //Due to the inconsistencies in documentation, specifically base URL, request body and response body,
+            //authentication done with the help of: https://github.com/zLeki/DXTrade-Python-Demo/blob/main/main.py
 
-            //Try replacing this with JsonSerializer.Serialize(_connectionOptions) to see whether the result is the same
-            //If so, replace this with it
-            string jsonString = JsonSerializer.Serialize(new
+            try
             {
-                username = _connectionOptions.Username,
-                password = _connectionOptions.Password,
-                vendor = _connectionOptions.Vendor
-            });
+                using var client = _httpClientFactory.CreateClient("DxTradeAuthenticationClient");
 
-            var stringContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                string jsonData = JsonSerializer.Serialize(_connectionOptions);
 
-            var response = await client.PostAsync("login", stringContent);
+                var stringContent = new StringContent(jsonData, Encoding.UTF8, "application/json");
 
-            string sessionToken = GetSessionToken(response.Headers);
+                var response = await client.PostAsync("login", stringContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string sessionToken = GetSessionToken(response.Headers);
+                }
+
+                else
+                {
+                    throw new AuthenticationException(response.StatusCode.ToString());
+                }
+
+            }
+            catch (AuthenticationException ex) 
+            {
+                // I have to register that logger.
+            }
         }
 
         private static string GetSessionToken(HttpResponseHeaders headers)
         {
-            // This merges all the headers together. Play around with it and try to get only the token header
-            var sessionToken = headers.SelectMany(h => h.Value)
+            var sessionData = headers.SelectMany(h => h.Value)
                 .FirstOrDefault(h => h.StartsWith($"{SessionTokenHeaderName}="));
 
-            if (string.IsNullOrWhiteSpace(sessionToken))
+            if (!string.IsNullOrWhiteSpace(sessionData))
             {
-                throw new InvalidOperationException("Coskaj nedobre");
+                var sessionToken = sessionData.Split(';').FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(sessionToken))
+                {
+                    return sessionToken;
+                }
             }
 
-            return sessionToken;
+            throw new AuthenticationException(message: "Sorry for inconvenience but there's been a problem with something." +
+                " Please try again later or contact our tech support team.");
+
         }
     }
 }

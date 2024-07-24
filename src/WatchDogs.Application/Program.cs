@@ -17,7 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-builder.Services.AddHttpClient("myClient", client => {
+builder.Services.AddHttpClient("DxTradeAuthenticationClient", client => {
     client.BaseAddress = new Uri("https://dxtrade.ftmo.com/api/auth/");
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
     client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
@@ -57,6 +57,7 @@ using (var serviceScope = app.Services.CreateScope())
     var services = serviceScope.ServiceProvider;
 
     var authenticator = services.GetRequiredService<IDxTradeAuthenticator>();
+
     await authenticator.AuthenticateAsync();
 }
 
