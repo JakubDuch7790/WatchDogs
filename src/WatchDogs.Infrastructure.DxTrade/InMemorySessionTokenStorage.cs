@@ -9,16 +9,16 @@ namespace Infrastructure.DxTrade;
 
 public class InMemorySessionTokenStorage : ISessionTokenStorage
 {
-    private string SessionToken { get; set; }
+    private string sessionToken;
 
     public Task<string> GetSessionTokenAsync()
     {
-        return Task.FromResult(SessionToken);
+        return Task.FromResult(sessionToken);
     }
 
-    public Task SetSessionTokenAsync(string sessionToken)
+    public Task SetSessionTokenAsync(string st)
     {
-        SessionToken = sessionToken;
+        sessionToken = st;
 
         return Task.CompletedTask;
     }

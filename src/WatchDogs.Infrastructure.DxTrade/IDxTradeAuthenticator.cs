@@ -10,10 +10,7 @@ namespace Infrastructure.DxTrade
 {
     public interface IDxTradeAuthenticator
     {
-        // Possible exeptions : HttpException, NotAuthorizedException, UnauthorizedAccessException,
-        // AuthenticationException, InvalidCredentialException.
-
-        /// <exception cref="UnauthorizedAccessException">
+        /// <exception cref="AuthenticationException">
         /// Failed authentication.
         /// </exception>
         Task AuthenticateAsync();

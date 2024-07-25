@@ -9,19 +9,18 @@ namespace Infrastructure.DxTrade
 {
     public class DxTradeAuthenticator : IDxTradeAuthenticator
     {
-        private const string CookieGroupName = "SET-COOKIE";
         private const string SessionTokenHeaderName = "JSESSIONID";
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly DxTradeConnectionOptions _connectionOptions;
-        private InMemorySessionTokenStorage _sessionToken;
+        private ISessionTokenStorage _sessionTokenStorage;
 
 
-        public DxTradeAuthenticator(IOptions<DxTradeConnectionOptions> configuration, IHttpClientFactory httpClientFactory)
+        public DxTradeAuthenticator(IOptions<DxTradeConnectionOptions> configuration, IHttpClientFactory httpClientFactory, ISessionTokenStorage sessionTokenStorage)
         {
             _connectionOptions = configuration.Value;
             _httpClientFactory = httpClientFactory;
-            _sessionToken = new InMemorySessionTokenStorage();
+            _sessionTokenStorage = sessionTokenStorage;
         }
 
         public async Task AuthenticateAsync()
@@ -31,7 +30,7 @@ namespace Infrastructure.DxTrade
 
             try
             {
-                using var client = _httpClientFactory.CreateClient("DxTradeAuthenticationClient");
+                using var client = _httpClientFactory.CreateClient(DxTradeConstants.DxTradeAuthenticationClient);
 
                 string jsonData = JsonSerializer.Serialize(_connectionOptions);
 
@@ -47,7 +46,7 @@ namespace Infrastructure.DxTrade
 
                     await sessionToken.SetSessionTokenAsync(GetSessionToken(response.Headers));
 
-                    _sessionToken = sessionToken;
+                    _sessionTokenStorage = sessionToken;
 
                 }
 
@@ -57,7 +56,7 @@ namespace Infrastructure.DxTrade
                 }
 
             }
-            catch (AuthenticationException ex) 
+            catch (Exception ex) 
             {
                 // I have to register that logger.
             }
@@ -66,7 +65,7 @@ namespace Infrastructure.DxTrade
         private static string GetSessionToken(HttpResponseHeaders headers)
         {
             var sessionData = headers.SelectMany(h => h.Value)
-                .FirstOrDefault(h => h.StartsWith($"{SessionTokenHeaderName}="));
+                .FirstOrDefault(h => h.StartsWith($"{SessionTokenHeaderName}=", StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrWhiteSpace(sessionData))
             {
@@ -78,8 +77,7 @@ namespace Infrastructure.DxTrade
                 }
             }
 
-            throw new AuthenticationException(message: "Sorry for inconvenience but there's been a problem with something." +
-                " Please try again later or contact our tech support team.");
+            throw new AuthenticationException(message: $"There is no '{SessionTokenHeaderName}' header in DxTrade login response.");
 
         }
     }
