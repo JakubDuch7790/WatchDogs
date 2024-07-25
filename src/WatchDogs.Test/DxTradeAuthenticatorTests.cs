@@ -16,10 +16,20 @@ public class DxTradeAuthenticatorTests
     private readonly DxTradeConnectionOptions _connectionOptions;
     private readonly DxTradeAuthenticator _authenticator;
 
-    [Fact]
-    public void AuthenticateAsync_Should()
+    public DxTradeAuthenticatorTests()
     {
-        
+        _httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        _sessionTokenStorageMock = new Mock<ISessionTokenStorage>();
+    }
+
+    [Fact]
+    public async Task AuthenticateAsync_ShouldGenerateAndStoreSessionToken()
+    {
+        //Arrange
+
+        //Act
+
+        //Assert
     }
     
 }
