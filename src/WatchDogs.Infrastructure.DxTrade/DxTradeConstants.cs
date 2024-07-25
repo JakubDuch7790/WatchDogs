@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.DxTrade
+namespace Infrastructure.DxTrade;
+
+public static class DxTradeConstants
 {
-    public static class DxTradeConstants
-    {
-        public const string DxTradeAuthenticationClient = "DxTradeAuthenticationClient";
-    }
+    public const string DxTradeAuthenticationClient = "DxTradeAuthenticationClient";
 }

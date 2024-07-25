@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.DxTrade
+namespace Infrastructure.DxTrade;
+
+public interface ISessionTokenStorage
 {
-    public interface ISessionTokenStorage
-    {
-        Task<string> GetSessionTokenAsync();
-        Task SetSessionTokenAsync(string sessionToken);
-    }
+    Task<string> GetSessionTokenAsync();
+    Task SetSessionTokenAsync(string sessionToken);
 }

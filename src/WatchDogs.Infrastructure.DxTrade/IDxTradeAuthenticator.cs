@@ -6,13 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.DxTrade
+namespace Infrastructure.DxTrade;
+
+public interface IDxTradeAuthenticator
 {
-    public interface IDxTradeAuthenticator
-    {
-        /// <exception cref="AuthenticationException">
-        /// Failed authentication.
-        /// </exception>
-        Task AuthenticateAsync();
-    }
+    /// <exception cref="AuthenticationException">
+    /// Failed authentication.
+    /// </exception>
+    Task AuthenticateAsync();
 }
