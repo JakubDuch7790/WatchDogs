@@ -36,9 +36,14 @@ public class DxTradeAuthenticatorTests
     {
         //Arrange
 
+
         //Act
 
+        await _authenticator.AuthenticateAsync();
+
         //Assert
+
+        _sessionTokenStorageMock.Verify(stsm => stsm.SetSessionTokenAsync("soetoken"));
     }
     
 }
