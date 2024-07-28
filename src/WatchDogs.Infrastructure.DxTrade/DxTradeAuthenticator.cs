@@ -23,7 +23,7 @@ public class DxTradeAuthenticator : IDxTradeAuthenticator
         _sessionTokenStorage = sessionTokenStorage;
     }
 
-    public async Task AuthenticateAsync()
+    public async Task<string> AuthenticateAsync()
     {
         //Due to the inconsistencies in documentation, specifically base URL, request body and response body,
         //authentication done with the help of: https://github.com/zLeki/DXTrade-Python-Demo/blob/main/main.py
@@ -38,19 +38,23 @@ public class DxTradeAuthenticator : IDxTradeAuthenticator
 
             var response = await client.PostAsync("login", stringContent);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var sessionToken = GetSessionToken(response.Headers);
-
-                await _sessionTokenStorage.SetSessionTokenAsync(sessionToken);
-            }
-
             response.EnsureSuccessStatusCode();
+
+            return GetSessionToken(response.Headers);
+
+            //if (response.IsSuccessStatusCode)
+            //{
+            //    var sessionToken = GetSessionToken(response.Headers);
+
+            //    await _sessionTokenStorage.SetSessionTokenAsync(sessionToken);
+            //}
+
+            //response.EnsureSuccessStatusCode();
 
         }
         catch (Exception ex) 
         {
-            // I have to register that logger.
+            throw new AuthenticationException();
         }
     }
 

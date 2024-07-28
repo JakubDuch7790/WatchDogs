@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -52,13 +53,35 @@ public class DxTradeAuthenticatorTests
         });
         //Act
 
-        await _authenticator.AuthenticateAsync();
+        string token = await _authenticator.AuthenticateAsync();
 
         //Assert
 
-        _sessionTokenStorageMock.Verify(stsm => stsm.SetSessionTokenAsync("sometoken"));
+        Assert.Equal("JSESSIONID=sometoken", token);
+    }
+
+    [Fact]
+    public async Task AuthenticateAsync_ShouldThrowAnAuthenticationException_InCaseOfUnsuccessfullResponse()
+    {
+        //Arrange
+        _httpClientFactoryMock.Setup(mockClient => mockClient.CreateClient(DxTradeConstants.DxTradeAuthenticationClient))
+            .Returns(new HttpClient(_handlerMock)
+            {
+                BaseAddress = new Uri("https://dxtrade.ftmo.com/api/auth/")
+            });
+
+        _handlerMock.When(HttpMethod.Post, "https://dxtrade.ftmo.com/api/auth/login").Respond(HttpStatusCode.Forbidden);
+        //Act
+
+
+        //Assert
+
+        await Assert.ThrowsAsync<AuthenticationException>(_authenticator.AuthenticateAsync);
     }
     
+
+
+
 }
 
 
