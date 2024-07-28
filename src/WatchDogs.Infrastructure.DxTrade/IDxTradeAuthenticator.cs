@@ -13,5 +13,6 @@ public interface IDxTradeAuthenticator
     /// <exception cref="AuthenticationException">
     /// Failed authentication.
     /// </exception>
-    Task AuthenticateAsync();
+    /// /// <returns>Authentication token</returns>
+    Task<string>AuthenticateAsync();
 }

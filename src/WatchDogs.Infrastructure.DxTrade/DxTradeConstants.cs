@@ -9,4 +9,5 @@ namespace Infrastructure.DxTrade;
 public static class DxTradeConstants
 {
     public const string DxTradeAuthenticationClient = "DxTradeAuthenticationClient";
+    public const string SessionTokenHeaderName = "JSESSIONID";
 }
