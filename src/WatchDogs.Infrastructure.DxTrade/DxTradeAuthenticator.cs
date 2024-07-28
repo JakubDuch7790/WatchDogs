@@ -13,14 +13,11 @@ public class DxTradeAuthenticator : IDxTradeAuthenticator
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly DxTradeConnectionOptions _connectionOptions;
-    private readonly ISessionTokenStorage _sessionTokenStorage;
 
-
-    public DxTradeAuthenticator(IOptions<DxTradeConnectionOptions> configuration, IHttpClientFactory httpClientFactory, ISessionTokenStorage sessionTokenStorage)
+    public DxTradeAuthenticator(IOptions<DxTradeConnectionOptions> configuration, IHttpClientFactory httpClientFactory)
     {
         _connectionOptions = configuration.Value;
         _httpClientFactory = httpClientFactory;
-        _sessionTokenStorage = sessionTokenStorage;
     }
 
     public async Task<string> AuthenticateAsync()
@@ -47,7 +44,6 @@ public class DxTradeAuthenticator : IDxTradeAuthenticator
             throw new AuthenticationException();
         }
     }
-
     private static string GetSessionToken(HttpResponseHeaders headers)
     {
         var sessionData = headers.SelectMany(h => h.Value)

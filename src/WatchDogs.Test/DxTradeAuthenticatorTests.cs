@@ -12,10 +12,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace WatchDogs.Test;
+
 public class DxTradeAuthenticatorTests
 {
+    private const string _testingToken = "JSESSIONID=sometoken";
+    private const string _testingURL = "https://dxtrade.ftmo.com/api/auth/";
+
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new Mock<IHttpClientFactory>();
-    private readonly Mock<ISessionTokenStorage> _sessionTokenStorageMock = new Mock<ISessionTokenStorage>();
     private readonly MockHttpMessageHandler _handlerMock = new MockHttpMessageHandler();
     private readonly DxTradeAuthenticator _authenticator;
 
@@ -32,7 +35,7 @@ public class DxTradeAuthenticatorTests
 
         optionsMock.Setup(o => o.Value).Returns(connectionOptions);
 
-        _authenticator = new DxTradeAuthenticator(optionsMock.Object, _httpClientFactoryMock.Object, _sessionTokenStorageMock.Object);
+        _authenticator = new DxTradeAuthenticator(optionsMock.Object, _httpClientFactoryMock.Object);
     }
 
     [Fact]
@@ -42,13 +45,13 @@ public class DxTradeAuthenticatorTests
         _httpClientFactoryMock.Setup(mockClient => mockClient.CreateClient(DxTradeConstants.DxTradeAuthenticationClient))
             .Returns(new HttpClient(_handlerMock)
             {
-                BaseAddress =  new Uri("https://dxtrade.ftmo.com/api/auth/")
+                BaseAddress =  new Uri(_testingURL)
             });
 
-        _handlerMock.When(HttpMethod.Post, "https://dxtrade.ftmo.com/api/auth/login").Respond(req =>
+        _handlerMock.When(HttpMethod.Post, _testingURL+"login").Respond(req =>
         {
             var response = new HttpResponseMessage(HttpStatusCode.OK);
-            response.Headers.Add("SessionTokenHeaderName", "JSESSIONID=sometoken; Path=/; Secure; HttpOnly; SameSite=Lax");
+            response.Headers.Add("SessionTokenHeaderName", _testingToken);
             return response;
         });
         //Act
@@ -57,7 +60,7 @@ public class DxTradeAuthenticatorTests
 
         //Assert
 
-        Assert.Equal("JSESSIONID=sometoken", token);
+        Assert.Equal(_testingToken, token);
     }
 
     [Fact]
@@ -67,10 +70,10 @@ public class DxTradeAuthenticatorTests
         _httpClientFactoryMock.Setup(mockClient => mockClient.CreateClient(DxTradeConstants.DxTradeAuthenticationClient))
             .Returns(new HttpClient(_handlerMock)
             {
-                BaseAddress = new Uri("https://dxtrade.ftmo.com/api/auth/")
+                BaseAddress = new Uri(_testingURL)
             });
 
-        _handlerMock.When(HttpMethod.Post, "https://dxtrade.ftmo.com/api/auth/login").Respond(HttpStatusCode.Forbidden);
+        _handlerMock.When(HttpMethod.Post, _testingURL+"login").Respond(HttpStatusCode.Forbidden);
 
         //Act and Assert
 
