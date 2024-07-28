@@ -41,16 +41,6 @@ public class DxTradeAuthenticator : IDxTradeAuthenticator
             response.EnsureSuccessStatusCode();
 
             return GetSessionToken(response.Headers);
-
-            //if (response.IsSuccessStatusCode)
-            //{
-            //    var sessionToken = GetSessionToken(response.Headers);
-
-            //    await _sessionTokenStorage.SetSessionTokenAsync(sessionToken);
-            //}
-
-            //response.EnsureSuccessStatusCode();
-
         }
         catch (Exception ex) 
         {

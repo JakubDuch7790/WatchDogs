@@ -71,17 +71,11 @@ public class DxTradeAuthenticatorTests
             });
 
         _handlerMock.When(HttpMethod.Post, "https://dxtrade.ftmo.com/api/auth/login").Respond(HttpStatusCode.Forbidden);
-        //Act
 
-
-        //Assert
+        //Act and Assert
 
         await Assert.ThrowsAsync<AuthenticationException>(_authenticator.AuthenticateAsync);
     }
-    
-
-
-
 }
 
 
