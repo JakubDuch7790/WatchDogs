@@ -2,9 +2,11 @@
 using Infrastructure.DxTrade;
 using Microsoft.Extensions.Options;
 using Moq;
+using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,6 +15,7 @@ public class DxTradeAuthenticatorTests
 {
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new Mock<IHttpClientFactory>();
     private readonly Mock<ISessionTokenStorage> _sessionTokenStorageMock = new Mock<ISessionTokenStorage>();
+    private readonly MockHttpMessageHandler _handlerMock = new MockHttpMessageHandler();
     private readonly DxTradeAuthenticator _authenticator;
 
     public DxTradeAuthenticatorTests()
@@ -35,15 +38,25 @@ public class DxTradeAuthenticatorTests
     public async Task AuthenticateAsync_ShouldGenerateAndStoreSessionToken_InCaseOfSuccessfullResponse()
     {
         //Arrange
+        _httpClientFactoryMock.Setup(mockClient => mockClient.CreateClient(DxTradeConstants.DxTradeAuthenticationClient))
+            .Returns(new HttpClient(_handlerMock)
+            {
+                BaseAddress =  new Uri("https://dxtrade.ftmo.com/api/auth/")
+            });
 
-
+        _handlerMock.When(HttpMethod.Post, "https://dxtrade.ftmo.com/api/auth/login").Respond(req =>
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.OK);
+            response.Headers.Add("SessionTokenHeaderName", "JSESSIONID=sometoken; Path=/; Secure; HttpOnly; SameSite=Lax");
+            return response;
+        });
         //Act
 
         await _authenticator.AuthenticateAsync();
 
         //Assert
 
-        _sessionTokenStorageMock.Verify(stsm => stsm.SetSessionTokenAsync("soetoken"));
+        _sessionTokenStorageMock.Verify(stsm => stsm.SetSessionTokenAsync("sometoken"));
     }
     
 }
