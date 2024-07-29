@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Contracts;
+
 public interface IRepository
 {
     Task CreateAsync();
