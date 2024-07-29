@@ -49,9 +49,9 @@ public class DxTradeAuthenticator : IDxTradeAuthenticator
         }
         catch (Exception ex) 
         {
-            _logger.LogError("HTTP request error occurred during authentication.");
+            _logger.LogError(ex, "HTTP request error occurred during authentication.");
 
-            throw new AuthenticationException();
+            throw new AuthenticationException("An error occurred during authentication", ex);
         }
     }
     private static string GetSessionToken(HttpResponseHeaders headers)
