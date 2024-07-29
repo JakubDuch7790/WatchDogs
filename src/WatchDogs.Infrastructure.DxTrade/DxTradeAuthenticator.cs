@@ -1,9 +1,11 @@
 ﻿using Contracts;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
+using static System.Net.WebRequestMethods;
 
 namespace Infrastructure.DxTrade;
 
@@ -11,13 +13,16 @@ public class DxTradeAuthenticator : IDxTradeAuthenticator
 {
     private const string SessionTokenHeaderName = "JSESSIONID";
 
+    private readonly ILogger<DxTradeAuthenticator> _logger;
+
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly DxTradeConnectionOptions _connectionOptions;
 
-    public DxTradeAuthenticator(IOptions<DxTradeConnectionOptions> configuration, IHttpClientFactory httpClientFactory)
+    public DxTradeAuthenticator(IOptions<DxTradeConnectionOptions> configuration, IHttpClientFactory httpClientFactory, ILogger<DxTradeAuthenticator> logger)
     {
         _connectionOptions = configuration.Value;
         _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     public async Task<string> AuthenticateAsync()
@@ -37,10 +42,15 @@ public class DxTradeAuthenticator : IDxTradeAuthenticator
 
             response.EnsureSuccessStatusCode();
 
+            _logger.LogInformation("Authentication successful.");
+
             return GetSessionToken(response.Headers);
+            
         }
         catch (Exception ex) 
         {
+            _logger.LogError("HTTP request error occurred during authentication.");
+
             throw new AuthenticationException();
         }
     }

@@ -9,11 +9,13 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    Log.Information("Starting web application");
-    
+       
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog();
+
+    //builder.Host.UseSerilog((context, configuration) => 
+    //configuration.ReadFrom.Configuration(context.Configuration));
 
     // Add services to the container.
     builder.Services.Configure<DxTradeConnectionOptions>(
@@ -58,6 +60,8 @@ try
     app.UseAuthorization();
 
     app.MapControllers();
+
+    Log.Information("Starting web application");
 
     app.Run();
 }
