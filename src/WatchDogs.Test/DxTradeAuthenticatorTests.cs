@@ -1,5 +1,6 @@
 ﻿using Contracts;
 using Infrastructure.DxTrade;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using RichardSzalay.MockHttp;
@@ -24,6 +25,7 @@ public class DxTradeAuthenticatorTests
 
     public DxTradeAuthenticatorTests()
     {
+        var nullLogger = NullLogger<DxTradeAuthenticator>.Instance;
         var optionsMock = new Mock<IOptions<DxTradeConnectionOptions>>();
 
         var connectionOptions = new DxTradeConnectionOptions
@@ -35,7 +37,7 @@ public class DxTradeAuthenticatorTests
 
         optionsMock.Setup(o => o.Value).Returns(connectionOptions);
 
-        _authenticator = new DxTradeAuthenticator(optionsMock.Object, _httpClientFactoryMock.Object);
+        _authenticator = new DxTradeAuthenticator(optionsMock.Object, _httpClientFactoryMock.Object, nullLogger);
     }
 
     [Fact]
