@@ -1,21 +1,46 @@
 using Contracts;
 using Infrastructure.DxTrade;
 using Serilog;
+using Serilog.Events;
 using System.Net.Http.Headers;
 
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateLogger();
+//Log.Logger = new LoggerConfiguration()
+//    .WriteTo.Console()
+//    .CreateLogger();
 
 try
 {
-       
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Host.UseSerilog();
+    //    var logger = new LoggerConfiguration()
+    //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    //.Enrich.FromLogContext()
+    //.WriteTo.Console()
+    //.CreateBootstrapLogger();
 
-    //builder.Host.UseSerilog((context, configuration) => 
-    //configuration.ReadFrom.Configuration(context.Configuration));
+
+
+
+    //builder.Host.UseSerilog((context, services, configuration) => configuration
+    //.ReadFrom.Configuration(context.Configuration)
+    //.ReadFrom.Services(services)
+    //.Enrich.FromLogContext()
+    //.WriteTo.Console());
+
+    ////--> Serilog Configuration below
+    //var logger = new LoggerConfiguration()
+    //.ReadFrom.Configuration(builder.Configuration)
+    //.Enrich.FromLogContext()
+    //.CreateLogger();
+
+    //builder.Logging.ClearProviders();
+    //builder.Logging.AddSerilog(logger);
+
+
+    //builder.Host.UseSerilog();
+
+    builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
     // Add services to the container.
     builder.Services.Configure<DxTradeConnectionOptions>(
@@ -37,6 +62,9 @@ try
     builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
     builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
 
+    builder.Host.UseSerilog((context, configuration) => 
+    configuration.ReadFrom.Configuration(context.Configuration));
+
     var app = builder.Build();
 
     using (var serviceScope = app.Services.CreateScope())
@@ -54,6 +82,8 @@ try
         app.UseSwagger();
         app.UseSwaggerUI();
     }
+
+    app.UseSerilogRequestLogging();
 
     app.UseHttpsRedirection();
 
