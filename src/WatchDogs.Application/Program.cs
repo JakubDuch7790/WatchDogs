@@ -37,6 +37,8 @@ try
     builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
     builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
 
+    builder.Services.AddSingleton<DxTradeClient>();
+
     var app = builder.Build();
 
     using (var serviceScope = app.Services.CreateScope())
@@ -46,7 +48,13 @@ try
         var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
 
         await dxTradeAuthenticator.AuthenticateAsync();
+
+        var dxTradeClient = services.GetRequiredService<DxTradeClient>();
+
+        await dxTradeClient.EstablishWebSocketConnectionAsync(dxTradeAuthenticator.AuthenticateAsync().Result);
     }
+
+
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
