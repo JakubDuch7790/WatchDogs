@@ -1,16 +1,30 @@
 using Contracts;
 using Infrastructure.DxTrade;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System.Net.Http.Headers;
 
-//Log.Logger = new LoggerConfiguration()
-//    .WriteTo.Console()
-//    .CreateLogger();
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+
+Log.Information("App is starting up");
 
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
+
+
 
     //    var logger = new LoggerConfiguration()
     //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -19,13 +33,15 @@ try
     //.CreateBootstrapLogger();
 
 
+    //Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
 
 
-    //builder.Host.UseSerilog((context, services, configuration) => configuration
-    //.ReadFrom.Configuration(context.Configuration)
-    //.ReadFrom.Services(services)
-    //.Enrich.FromLogContext()
-    //.WriteTo.Console());
+
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .Enrich.FromLogContext());
+    //.WriteTo.Console()
+    //.WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day));
 
     ////--> Serilog Configuration below
     //var logger = new LoggerConfiguration()
@@ -39,8 +55,8 @@ try
 
     //builder.Host.UseSerilog();
 
-    builder.Host.UseSerilog((context, configuration) =>
-    configuration.ReadFrom.Configuration(context.Configuration));
+    //builder.Host.UseSerilog((context, configuration) =>
+    //configuration.ReadFrom.Configuration(context.Configuration));
 
     // Add services to the container.
     builder.Services.Configure<DxTradeConnectionOptions>(
