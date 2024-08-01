@@ -23,10 +23,6 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Host.UseSerilog((context, services, configuration) => configuration
-    .ReadFrom.Configuration(context.Configuration)
-    .Enrich.FromLogContext());
-
     // Add services to the container.
     builder.Services.Configure<DxTradeConnectionOptions>(
         builder.Configuration.GetSection(nameof(DxTradeConnectionOptions)));
@@ -47,6 +43,9 @@ try
     builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
     builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
 
+    builder.Host.UseSerilog((context, configuration) =>
+        configuration.ReadFrom.Configuration(context.Configuration));
+
     var app = builder.Build();
 
     using (var serviceScope = app.Services.CreateScope())
@@ -57,8 +56,6 @@ try
 
         await dxTradeAuthenticator.AuthenticateAsync();
     }
-
-
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
