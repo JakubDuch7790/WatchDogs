@@ -1,21 +1,27 @@
 using Contracts;
 using Infrastructure.DxTrade;
+using Microsoft.Extensions.Configuration;
 using Serilog;
+using Serilog.Events;
 using System.Net.Http.Headers;
 
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
+
 Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
     .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
+
+
+Log.Information("App is starting up");
 
 try
 {
-       
     var builder = WebApplication.CreateBuilder(args);
-
-    builder.Host.UseSerilog();
-
-    //builder.Host.UseSerilog((context, configuration) => 
-    //configuration.ReadFrom.Configuration(context.Configuration));
 
     // Add services to the container.
     builder.Services.Configure<DxTradeConnectionOptions>(
@@ -37,7 +43,8 @@ try
     builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
     builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
 
-    builder.Services.AddSingleton<DxTradeClient>();
+    builder.Host.UseSerilog((context, configuration) =>
+        configuration.ReadFrom.Configuration(context.Configuration));
 
     var app = builder.Build();
 
@@ -48,13 +55,7 @@ try
         var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
 
         await dxTradeAuthenticator.AuthenticateAsync();
-
-        var dxTradeClient = services.GetRequiredService<DxTradeClient>();
-
-        await dxTradeClient.EstablishWebSocketConnectionAsync(dxTradeAuthenticator.AuthenticateAsync().Result);
     }
-
-
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
@@ -62,6 +63,8 @@ try
         app.UseSwagger();
         app.UseSwaggerUI();
     }
+
+    app.UseSerilogRequestLogging();
 
     app.UseHttpsRedirection();
 
