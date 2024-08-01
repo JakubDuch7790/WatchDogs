@@ -23,40 +23,9 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-
-
-
-    //    var logger = new LoggerConfiguration()
-    //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    //.Enrich.FromLogContext()
-    //.WriteTo.Console()
-    //.CreateBootstrapLogger();
-
-
-    //Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
-
-
-
     builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)
     .Enrich.FromLogContext());
-    //.WriteTo.Console()
-    //.WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day));
-
-    ////--> Serilog Configuration below
-    //var logger = new LoggerConfiguration()
-    //.ReadFrom.Configuration(builder.Configuration)
-    //.Enrich.FromLogContext()
-    //.CreateLogger();
-
-    //builder.Logging.ClearProviders();
-    //builder.Logging.AddSerilog(logger);
-
-
-    //builder.Host.UseSerilog();
-
-    //builder.Host.UseSerilog((context, configuration) =>
-    //configuration.ReadFrom.Configuration(context.Configuration));
 
     // Add services to the container.
     builder.Services.Configure<DxTradeConnectionOptions>(
