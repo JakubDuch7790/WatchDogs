@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts;
+namespace WatchDogs.Contracts;
 
-public interface IRepository
+public interface ITradeRepository
 {
-    Task CreateAsync();
-    Task ListAsync();
+    Task GetTradesAsync();
 }
