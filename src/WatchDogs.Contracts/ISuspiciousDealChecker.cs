@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WatchDogs.Contracts;
 
-public interface ITradeRepository 
+public interface ISuspiciousDealChecker
 {
-    Task<List<ITrade>> GetTradesAsync();
+    Task CheckDealAsync();
 }
