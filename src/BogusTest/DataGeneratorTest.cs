@@ -23,7 +23,7 @@ public class DataGeneratorTest
 
         tradeModelFake = new Faker<TradeModel>()
             .RuleFor(u => u.DealsGuid, f => f.Finance.Random.Guid())
-            .RuleFor(u => u.Currency, f => f.Finance.Currency().Code)
+            .RuleFor(u => u.Currency, f => GetRandomCurrencyPair(f))
             .RuleFor(u => u.TimeStamp, f => f.Date.RecentOffset(0))
             .RuleFor(u => u.Action, f => f.PickRandom<TradeAction>())
             .RuleFor(u => u.Lot, f => f.Random.Decimal())
@@ -51,6 +51,21 @@ public class DataGeneratorTest
         {
             Console.WriteLine(trade);
         }
+    }
+
+    private string GetRandomCurrencyPair(Faker f)
+    {
+        var currency1 = f.Finance.Currency().Code;
+        var currency2 = f.Finance.Currency().Code;
+
+        // loop below ensure the two currencies are different
+
+        while (currency1 == currency2)
+        {
+            currency2 = f.Finance.Currency().Code;
+        }
+
+        return currency1 + currency2;
     }
 
 }
