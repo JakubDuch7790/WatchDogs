@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System.Net.Http.Headers;
+using WatchDogs.Contracts;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -44,6 +45,7 @@ try
     builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
 
     builder.Services.AddSingleton<DxTradeClient>();
+    builder.Services.AddTransient<DataGenerator>();
 
     builder.Host.UseSerilog((context, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));
@@ -53,6 +55,10 @@ try
     using (var serviceScope = app.Services.CreateScope())
     {
         var services = serviceScope.ServiceProvider;
+
+        var bogusDataGenerator = services.GetRequiredService<DataGenerator>();
+
+        bogusDataGenerator.GenerateFakeTrade();
 
         var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
 

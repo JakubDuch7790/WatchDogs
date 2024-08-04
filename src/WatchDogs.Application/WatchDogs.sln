@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchDogs.Domain", "..\Watc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchDogs.Test", "..\WatchDogs.Test\WatchDogs.Test.csproj", "{8D798AF3-DD8E-487E-8C18-234E647D3C41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WatchDogs.Persistence.EntityFramework", "..\WatchDogs.Persistence.EntityFramework\WatchDogs.Persistence.EntityFramework.csproj", "{58724528-2736-4E6D-A095-6F06308B59C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchDogs.Persistence.EntityFramework", "..\WatchDogs.Persistence.EntityFramework\WatchDogs.Persistence.EntityFramework.csproj", "{58724528-2736-4E6D-A095-6F06308B59C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BogusTest", "..\BogusTest\BogusTest.csproj", "{3267438E-5EF0-4665-A908-428056C1BD6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{58724528-2736-4E6D-A095-6F06308B59C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58724528-2736-4E6D-A095-6F06308B59C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58724528-2736-4E6D-A095-6F06308B59C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3267438E-5EF0-4665-A908-428056C1BD6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3267438E-5EF0-4665-A908-428056C1BD6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3267438E-5EF0-4665-A908-428056C1BD6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3267438E-5EF0-4665-A908-428056C1BD6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

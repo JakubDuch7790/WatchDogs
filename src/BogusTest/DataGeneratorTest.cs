@@ -1,21 +1,22 @@
-﻿using System;
+﻿using Bogus;
+using Bogus.DataSets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Bogus;
 
-namespace WatchDogs.Contracts;
+namespace BogusTest;
 
 //**Deal #2**, Balance 10 000, Sell GBPUSD 0.2 lots at 2019-05-12 14:43:23 
 
-public class DataGenerator
+public class DataGeneratorTest
 {
     // This holds an information or set of rules for generating fake data for TradeModel
 
     Faker<TradeModel> tradeModelFake;
 
-    public DataGenerator()
+    public DataGeneratorTest()
     {
         // This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
         Randomizer.Seed = new Random(123);
@@ -30,9 +31,26 @@ public class DataGenerator
             );
     }
 
+    
+
     public TradeModel GenerateFakeTrade()
     {
         return tradeModelFake.Generate();
+    }
+
+    public IEnumerable<TradeModel> GenerateFakeTrades()
+    {
+        return tradeModelFake.GenerateForever();
+    }
+
+    public void LoadFakeData()
+    {
+        var fakeTrades = GenerateFakeTrades().Take(10);
+
+        foreach (var trade in fakeTrades)
+        {
+            Console.WriteLine(trade);
+        }
     }
 
 }
