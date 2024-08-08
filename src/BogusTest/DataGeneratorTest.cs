@@ -25,7 +25,7 @@ public class DataGeneratorTest
         // This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
         Randomizer.Seed = new Random(123);
 
-        DateTimeOffset initialTimestamp = DateTimeOffset.Now.AddDays(0); // only for today
+        DateTimeOffset initialTimestamp = DateTimeOffset.Now.AddDays(0);
 
         tradeModelFake = new Faker<TradeModel>()
             .RuleFor(u => u.DealsGuid, f => f.Finance.Random.Guid())
@@ -34,7 +34,6 @@ public class DataGeneratorTest
             {
                 initialTimestamp = initialTimestamp.AddMinutes(f.Random.Int(0, 2)); // Due to assignment, Timestamps should be closer to each other and in chronological order
                 return initialTimestamp;
-
             })
             .RuleFor(u => u.Action, f => f.PickRandom<TradeAction>())
             .RuleFor(u => u.Lot, f => Math.Round(f.Random.Decimal(), 3)) // Lot rounded to two decimals in the example, I round to 3 just because.
@@ -75,8 +74,8 @@ public class DataGeneratorTest
             "CNY", // Chinese Yuan
         };
 
-        var currency1 = f.Random.ListItem(currencies);
-        var currency2 = f.Random.ListItem(currencies);
+        string currency1 = f.Random.ListItem(currencies);
+        string currency2 = f.Random.ListItem(currencies);
 
         // loop below ensure the two currencies are different
 
