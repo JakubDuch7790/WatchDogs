@@ -8,7 +8,11 @@ using System.Threading.Tasks;
 
 namespace BogusTest;
 
-//**Deal #2**, Balance 10 000, Sell GBPUSD 0.2 lots at 2019-05-12 14:43:23 
+//Deal #1, Balance 10 000, Buy EURUSD 1 lot at 2019-05-12 14:43:12
+//Deal #2, Balance 10 000, Sell GBPUSD 0.2 lots at 2019-05-12 14:43:23
+//Deal #3, Balance 1 000, Sell GBPUSD 1.2 lots at 2019-05-12 14:43:23
+//Deal #4, Balance 10 000, Sell GBPUSD 0.21 lot at 2019-05-12 14:43:24 <- triggered match with deal #2
+//Deal #5, Balance 20 000, Sell GBPUSD 0.4 lot at 2019-05-12 14:43:24 <- triggered match with deal #2 and deal #4
 
 public class DataGeneratorTest
 {
@@ -23,15 +27,15 @@ public class DataGeneratorTest
 
         tradeModelFake = new Faker<TradeModel>()
             .RuleFor(u => u.DealsGuid, f => f.Finance.Random.Guid())
-            .RuleFor(u => u.Currency, f => GetRandomCurrencyPair(f))
+            .RuleFor(u => u.Currency, f => GetRandomCurrencyPair(f)) // We are getting a lot of different currencyPairs but not the same ones . This could provide to little matches in suspisious deals
             .RuleFor(u => u.TimeStamp, f => f.Date.RecentOffset(0))
             .RuleFor(u => u.Action, f => f.PickRandom<TradeAction>())
-            .RuleFor(u => u.Lot, f => f.Random.Decimal())
-            .RuleFor(u => u.AccountBalance, f => f.Finance.Random.Decimal(/*amount yet to be inserted*/)
+            .RuleFor(u => u.Lot, f => Math.Round(f.Random.Decimal(), 3)) // Lot rounded to two decimals in the example, I round to 3 just because.
+            .RuleFor(u => u.AccountBalance, f => Math.Round(f.Finance.Random.Decimal(1, 10000), 3) // Rounded to 3 decimal places as well
             );
-    }
 
-    
+        //Math.Round(f.Random.Decimal())
+    }
 
     public TradeModel GenerateFakeTrade()
     {
@@ -45,7 +49,7 @@ public class DataGeneratorTest
 
     public void LoadFakeData()
     {
-        var fakeTrades = GenerateFakeTrades().Take(10);
+        var fakeTrades = GenerateFakeTrades().Take(new Random().Next(20, 100));
 
         foreach (var trade in fakeTrades)
         {
