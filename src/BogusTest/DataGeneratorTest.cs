@@ -24,11 +24,17 @@ public class DataGeneratorTest
     {
         // This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
         Randomizer.Seed = new Random(123);
+        DateTimeOffset initialTimestamp = DateTimeOffset.Now.AddDays(-10);
 
         tradeModelFake = new Faker<TradeModel>()
             .RuleFor(u => u.DealsGuid, f => f.Finance.Random.Guid())
             .RuleFor(u => u.Currency, f => GetRandomCurrencyPair(f)) // We are getting a lot of different currencyPairs but not the same ones . This could provide to little matches in suspisious deals
-            .RuleFor(u => u.TimeStamp, f => f.Date.RecentOffset(0))
+            .RuleFor(u => u.TimeStamp, (f, u) =>
+            {
+                initialTimestamp = initialTimestamp.AddMinutes(f.Random.Int(1, 3)); // Due to assignment, Timestamps should be closer to each other and in chronological order
+                return initialTimestamp;
+
+            })
             .RuleFor(u => u.Action, f => f.PickRandom<TradeAction>())
             .RuleFor(u => u.Lot, f => Math.Round(f.Random.Decimal(), 3)) // Lot rounded to two decimals in the example, I round to 3 just because.
             .RuleFor(u => u.AccountBalance, f => Math.Round(f.Finance.Random.Decimal(1, 10000), 3) // Rounded to 3 decimal places as well
