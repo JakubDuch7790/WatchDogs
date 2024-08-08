@@ -24,14 +24,15 @@ public class DataGeneratorTest
     {
         // This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
         Randomizer.Seed = new Random(123);
-        DateTimeOffset initialTimestamp = DateTimeOffset.Now.AddDays(-10);
+
+        DateTimeOffset initialTimestamp = DateTimeOffset.Now.AddDays(0); // only for today
 
         tradeModelFake = new Faker<TradeModel>()
             .RuleFor(u => u.DealsGuid, f => f.Finance.Random.Guid())
-            .RuleFor(u => u.Currency, f => GetRandomCurrencyPair(f)) // We are getting a lot of different currencyPairs but not the same ones . This could provide to little matches in suspisious deals
+            .RuleFor(u => u.Currency, GetRandomCurrencyPair)
             .RuleFor(u => u.TimeStamp, (f, u) =>
             {
-                initialTimestamp = initialTimestamp.AddMinutes(f.Random.Int(1, 3)); // Due to assignment, Timestamps should be closer to each other and in chronological order
+                initialTimestamp = initialTimestamp.AddMinutes(f.Random.Int(0, 2)); // Due to assignment, Timestamps should be closer to each other and in chronological order
                 return initialTimestamp;
 
             })
@@ -39,8 +40,6 @@ public class DataGeneratorTest
             .RuleFor(u => u.Lot, f => Math.Round(f.Random.Decimal(), 3)) // Lot rounded to two decimals in the example, I round to 3 just because.
             .RuleFor(u => u.AccountBalance, f => Math.Round(f.Finance.Random.Decimal(1, 10000), 3) // Rounded to 3 decimal places as well
             );
-
-        //Math.Round(f.Random.Decimal())
     }
 
     public TradeModel GenerateFakeTrade()
@@ -65,14 +64,25 @@ public class DataGeneratorTest
 
     private string GetRandomCurrencyPair(Faker f)
     {
-        var currency1 = f.Finance.Currency().Code;
-        var currency2 = f.Finance.Currency().Code;
+        List<string> currencies = new List<string>
+        {
+            "USD", // United States Dollar
+            "EUR", // Euro
+            "JPY", // Japanese Yen
+            "GBP", // British Pound Sterling
+            "AUD", // Australian Dollar
+            "CHF", // Swiss Franc
+            "CNY", // Chinese Yuan
+        };
+
+        var currency1 = f.Random.ListItem(currencies);
+        var currency2 = f.Random.ListItem(currencies);
 
         // loop below ensure the two currencies are different
 
         while (currency1 == currency2)
         {
-            currency2 = f.Finance.Currency().Code;
+            currency2 = f.Random.ListItem(currencies);
         }
 
         return currency1 + currency2;
