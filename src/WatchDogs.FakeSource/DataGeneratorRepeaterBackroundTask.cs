@@ -5,17 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BogusTest;
+namespace WatchDogs.FakeSource;
 
 public class DataGeneratorRepeaterBackroundTask : IDataGeneratorRepeaterBackroundTask
 {
     private Task? _timerTask;
     private readonly PeriodicTimer _timer;
     private readonly CancellationTokenSource _cts = new();
-    private readonly IDataGeneratorTest _dataGenerator;
+    private readonly IDataGenerator _dataGenerator;
 
 
-    public DataGeneratorRepeaterBackroundTask(TimeSpan interval, IDataGeneratorTest dataGenerator)
+    public DataGeneratorRepeaterBackroundTask(TimeSpan interval, IDataGenerator dataGenerator)
     {
         _timer = new PeriodicTimer(interval);
         _dataGenerator = dataGenerator;

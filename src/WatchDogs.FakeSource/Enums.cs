@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WatchDogs.Contracts;
+namespace WatchDogs.FakeSource;
 
 public enum TradeAction
 {

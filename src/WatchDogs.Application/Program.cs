@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System.Net.Http.Headers;
-using WatchDogs.Contracts;
+using WatchDogs.FakeSource;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -42,10 +42,16 @@ try
     });
 
     builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
-    builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
+    builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>(); 
 
     builder.Services.AddSingleton<DxTradeClient>();
-    builder.Services.AddTransient<DataGenerator>();
+    builder.Services.AddTransient<IDataGenerator, DataGenerator>();
+    builder.Services.AddSingleton<DataGeneratorRepeaterBackroundTask>(serviceProvider =>
+    {
+        var dataGenerator = serviceProvider.GetRequiredService<IDataGenerator>();
+        return new DataGeneratorRepeaterBackroundTask(TimeSpan.FromMilliseconds(1000), dataGenerator);
+    });
+    
 
     builder.Host.UseSerilog((context, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));
@@ -56,9 +62,10 @@ try
     {
         var services = serviceScope.ServiceProvider;
 
-        var bogusDataGenerator = services.GetRequiredService<DataGenerator>();
+        var bogusDataGenerator = services.GetRequiredService<DataGeneratorRepeaterBackroundTask>();
 
-        bogusDataGenerator.GenerateFakeTrade();
+        bogusDataGenerator.Start();
+        await bogusDataGenerator.StopAsync();
 
         var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
 

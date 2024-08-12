@@ -2,7 +2,6 @@
 using BogusTest;
 
 IDataGeneratorTest dataGenerator = new DataGeneratorTest();
-ISuspiciousDealsDetector suspiciousDealsDetector = new SuspiciousDealsDetector(dataGenerator);
 
 Console.WriteLine("Hello, World!");
 Console.WriteLine("---------------------------------");

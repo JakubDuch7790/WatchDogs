@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Bogus;
 
-namespace WatchDogs.Contracts;
+namespace WatchDogs.FakeSource;
 
 public record TradeModel
 
@@ -25,4 +25,10 @@ public record TradeModel
     public DateTimeOffset TimeStamp { get; set; }
     public string Currency { get; set; }
     public decimal Lot { get; set; }
+
+    public override string ToString()
+    {
+        return $"**Deal: {DealsGuid}, Balance {AccountBalance}, {Action} {Currency} {Lot} at {TimeStamp}\n";
+    }
+
 }
