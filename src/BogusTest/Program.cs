@@ -1,17 +1,22 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using BogusTest;
 
+IDataGeneratorTest dataGenerator = new DataGeneratorTest();
+ISuspiciousDealsDetector suspiciousDealsDetector = new SuspiciousDealsDetector(dataGenerator);
 
 Console.WriteLine("Hello, World!");
+Console.WriteLine("---------------------------------");
+Console.WriteLine("Press key to start");
 
-DataGeneratorTest dataGeneratorTest = new DataGeneratorTest();
+Console.ReadKey();
 
-var fakeTrade = dataGeneratorTest.GenerateFakeTrade();
+var dgrbt = new DataGeneratorRepeaterBackroundTask(TimeSpan.FromMilliseconds(1000), dataGenerator);
 
-Console.WriteLine(fakeTrade);
+dgrbt.Start();
 
-Console.WriteLine("-----------------------");
+Console.WriteLine("Press key to StopTask");
+Console.ReadKey();
 
-var dataGeneratorTest1 = new DataGeneratorTest();
+await dgrbt.StopAsync();
 
-dataGeneratorTest1.LoadFakeData();
+

@@ -14,7 +14,7 @@ namespace BogusTest;
 //Deal #4, Balance 10 000, Sell GBPUSD 0.21 lot at 2019-05-12 14:43:24 <- triggered match with deal #2
 //Deal #5, Balance 20 000, Sell GBPUSD 0.4 lot at 2019-05-12 14:43:24 <- triggered match with deal #2 and deal #4
 
-public class DataGeneratorTest
+public class DataGeneratorTest : IDataGeneratorTest
 {
     // This holds an information or set of rules for generating fake data for TradeModel
 
@@ -23,21 +23,22 @@ public class DataGeneratorTest
     public DataGeneratorTest()
     {
         // This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
-        Randomizer.Seed = new Random(123);
 
-        DateTimeOffset initialTimestamp = DateTimeOffset.Now.AddDays(0);
+        //Randomizer.Seed = new Random(123);
+
+        DateTimeOffset initialTimestamp = DateTimeOffset.Now;
 
         tradeModelFake = new Faker<TradeModel>()
             .RuleFor(u => u.DealsGuid, f => f.Finance.Random.Guid())
             .RuleFor(u => u.Currency, GetRandomCurrencyPair)
             .RuleFor(u => u.TimeStamp, (f, u) =>
             {
-                initialTimestamp = initialTimestamp.AddMinutes(f.Random.Int(0, 2)); // Due to assignment, Timestamps should be closer to each other and in chronological order
+                initialTimestamp = initialTimestamp.AddMilliseconds(f.Random.Int(0, 5000)); // Due to assignment, Timestamps should be closer to each other and in chronological order
                 return initialTimestamp;
             })
             .RuleFor(u => u.Action, f => f.PickRandom<TradeAction>())
-            .RuleFor(u => u.Lot, f => Math.Round(f.Random.Decimal(), 3)) // Lot rounded to two decimals in the example, I round to 3 just because.
-            .RuleFor(u => u.AccountBalance, f => Math.Round(f.Finance.Random.Decimal(1, 10000), 3) // Rounded to 3 decimal places as well
+            .RuleFor(u => u.Lot, f => Math.Round(f.Random.Decimal(), 2))
+            .RuleFor(u => u.AccountBalance, f => Math.Round(f.Finance.Random.Decimal(1, 10000), 2)
             );
     }
 
@@ -51,14 +52,20 @@ public class DataGeneratorTest
         return tradeModelFake.GenerateForever();
     }
 
-    public void LoadFakeData()
+    public List<TradeModel> LoadFakeData()
     {
+        List<TradeModel> fakeDealsList = new List<TradeModel>();
+
         var fakeTrades = GenerateFakeTrades().Take(new Random().Next(20, 100));
 
         foreach (var trade in fakeTrades)
         {
             Console.WriteLine(trade);
+
+            fakeDealsList.Add(trade);
         }
+
+        return fakeDealsList;
     }
 
     private string GetRandomCurrencyPair(Faker f)
@@ -77,8 +84,6 @@ public class DataGeneratorTest
         string currency1 = f.Random.ListItem(currencies);
         string currency2 = f.Random.ListItem(currencies);
 
-        // loop below ensure the two currencies are different
-
         while (currency1 == currency2)
         {
             currency2 = f.Random.ListItem(currencies);
@@ -86,5 +91,4 @@ public class DataGeneratorTest
 
         return currency1 + currency2;
     }
-
 }
