@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bogus;
+using WatchDogs.Contracts;
 
 namespace WatchDogs.FakeSource;
 
@@ -13,22 +14,32 @@ namespace WatchDogs.FakeSource;
 //Deal #4, Balance 10 000, Sell GBPUSD 0.21 lot at 2019-05-12 14:43:24 <- triggered match with deal #2
 //Deal #5, Balance 20 000, Sell GBPUSD 0.4 lot at 2019-05-12 14:43:24 <- triggered match with deal #2 and deal #4
 
-public class DataGenerator : IDataGenerator
+public class FakeTradeGenerator : IFakeTradeGenerator
 {
-    // This holds an information or set of rules for generating fake data for TradeModel
+    // This holds an information or set of rules for generating fake data for Trade
 
-    Faker<TradeModel> tradeModelFake;
+    Faker<Trade> tradeModelFake;
 
-    public DataGenerator()
+    private readonly string[] currencies =
+    [
+            "USD", // United States Dollar
+            "EUR", // Euro
+            "JPY", // Japanese Yen
+            "GBP", // British Pound Sterling
+            "AUD", // Australian Dollar
+            "CHF", // Swiss Franc
+            "CNY", // Chinese Yuan
+    ];
+
+    public FakeTradeGenerator()
     {
-        // This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
-
-        //Randomizer.Seed = new Random(123);
+        /// This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
+        ///Randomizer.Seed = new Random(123);
 
         DateTimeOffset initialTimestamp = DateTimeOffset.Now;
 
-        tradeModelFake = new Faker<TradeModel>()
-            .RuleFor(u => u.DealsGuid, f => f.Finance.Random.Guid())
+        tradeModelFake = new Faker<Trade>()
+            .RuleFor(u => u.Id, f => f.Finance.Random.Guid())
             .RuleFor(u => u.Currency, GetRandomCurrencyPair)
             .RuleFor(u => u.TimeStamp, (f, u) =>
             {
@@ -41,26 +52,14 @@ public class DataGenerator : IDataGenerator
             );
     }
 
-    public TradeModel GenerateFakeTrade()
+    public IEnumerable<Trade> LoadFakeData()
     {
-        return tradeModelFake.Generate();
-    }
+        List<Trade> fakeDealsList = new List<Trade>();
 
-    public IEnumerable<TradeModel> GenerateFakeTrades()
-    {
-        return tradeModelFake.GenerateForever();
-    }
-
-    public List<TradeModel> LoadFakeData()
-    {
-        List<TradeModel> fakeDealsList = new List<TradeModel>();
-
-        var fakeTrades = GenerateFakeTrades().Take(new Random().Next(20, 100));
+        var fakeTrades = tradeModelFake.GenerateForever().Take(new Random().Next(20, 100));
 
         foreach (var trade in fakeTrades)
         {
-            Console.WriteLine(trade);
-
             fakeDealsList.Add(trade);
         }
 
@@ -69,17 +68,6 @@ public class DataGenerator : IDataGenerator
 
     private string GetRandomCurrencyPair(Faker f)
     {
-        List<string> currencies = new List<string>
-        {
-            "USD", // United States Dollar
-            "EUR", // Euro
-            "JPY", // Japanese Yen
-            "GBP", // British Pound Sterling
-            "AUD", // Australian Dollar
-            "CHF", // Swiss Franc
-            "CNY", // Chinese Yuan
-        };
-
         string currency1 = f.Random.ListItem(currencies);
         string currency2 = f.Random.ListItem(currencies);
 

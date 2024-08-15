@@ -45,10 +45,10 @@ try
     builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>(); 
 
     builder.Services.AddSingleton<DxTradeClient>();
-    builder.Services.AddTransient<IDataGenerator, DataGenerator>();
-    builder.Services.AddSingleton<DataGeneratorRepeaterBackroundTask>(serviceProvider =>
+    builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
+    builder.Services.AddSingleton(serviceProvider =>
     {
-        var dataGenerator = serviceProvider.GetRequiredService<IDataGenerator>();
+        var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
         return new DataGeneratorRepeaterBackroundTask(TimeSpan.FromMilliseconds(1000), dataGenerator);
     });
     

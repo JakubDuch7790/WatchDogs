@@ -3,6 +3,6 @@ namespace WatchDogs.FakeSource;
 
 public interface IDataGeneratorRepeaterBackroundTask
 {
-    void Start();
+    Task StartAsync(CancellationToken token = default);
     Task StopAsync();
 }

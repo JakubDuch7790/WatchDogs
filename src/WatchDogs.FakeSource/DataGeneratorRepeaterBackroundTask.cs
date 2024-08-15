@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Serilog.Core;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace WatchDogs.FakeSource;
 
@@ -12,16 +14,19 @@ public class DataGeneratorRepeaterBackroundTask : IDataGeneratorRepeaterBackroun
     private Task? _timerTask;
     private readonly PeriodicTimer _timer;
     private readonly CancellationTokenSource _cts = new();
-    private readonly IDataGenerator _dataGenerator;
+    private readonly IFakeTradeGenerator _dataGenerator;
+    private readonly ILogger _logger;
 
 
-    public DataGeneratorRepeaterBackroundTask(TimeSpan interval, IDataGenerator dataGenerator)
+
+    public DataGeneratorRepeaterBackroundTask(TimeSpan interval, IFakeTradeGenerator dataGenerator, ILogger loger)
     {
         _timer = new PeriodicTimer(interval);
         _dataGenerator = dataGenerator;
+        _logger = loger;
     }
 
-    public void Start()
+    public async Task StartAsync()
     {
         _timerTask = LoadFakeDataEverySecondAsync();
     }
@@ -35,7 +40,10 @@ public class DataGeneratorRepeaterBackroundTask : IDataGeneratorRepeaterBackroun
                 _dataGenerator.LoadFakeData();
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException) 
+        {
+            _logger.Error("Something went wrong.");
+        }
     }
 
     public async Task StopAsync()

@@ -21,12 +21,12 @@ public record TradeModel
 //Why Tim want to make this record instead of class??? Ask Mato.
 
 {
-    public Guid DealsGuid { get; set; }
-    public decimal AccountBalance { get; set; }
-    public TradeAction Action { get; set; }
-    public DateTimeOffset TimeStamp { get; set; }
-    public string Currency { get; set; }
-    public decimal Lot { get; set; }
+    public Guid DealsGuid { get; init; }
+    public decimal AccountBalance { get; init; }
+    public TradeAction Action { get; init; }
+    public DateTimeOffset TimeStamp { get; init; }
+    public string Currency { get; init; }
+    public decimal Lot { get; init; }
 
 
     public override string ToString()
