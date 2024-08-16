@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts;
+namespace WatchDogs.Contracts;
 
-public interface IRepository
+public enum TradeAction
 {
-    Task CreateAsync();
-    Task ListAsnyc();
+    Buy,
+    Sell
 }
