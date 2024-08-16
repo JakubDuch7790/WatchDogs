@@ -15,7 +15,7 @@ public class DataInserter
         _context = context;
     }
 
-    public async Task InsertTradeDatatoDb(IEnumerable<Trade> data)
+    public async Task InsertTradeDatatoDbAsync(IEnumerable<Trade> data)
     {
         foreach (var trade in data)
         {

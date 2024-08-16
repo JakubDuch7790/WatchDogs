@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Serilog;
+using WatchDogs.Persistence.EntityFramework;
 
 namespace WatchDogs.Infrastructure.FakeSource;
 
@@ -57,7 +58,11 @@ public class Watcher : IWatcher
         {
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
-                _dataGenerator.LoadFakeData();
+                var tradesToInsert = _dataGenerator.LoadFakeData();
+
+                await _dataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
+
+
             }
         }
         catch (OperationCanceledException) 
