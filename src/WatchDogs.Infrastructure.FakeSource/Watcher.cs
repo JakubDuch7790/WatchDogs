@@ -61,8 +61,6 @@ public class Watcher : IWatcher
                 var tradesToInsert = _dataGenerator.LoadFakeData();
 
                 await _dataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
-
-
             }
         }
         catch (OperationCanceledException) 

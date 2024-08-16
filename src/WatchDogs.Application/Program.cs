@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System.Net.Http.Headers;
-using WatchDogs.FakeSource;
+using WatchDogs.Infrastructure.FakeSource;
 using WatchDogs.Persistence.EntityFramework;
 
 var configuration = new ConfigurationBuilder()
@@ -55,7 +55,8 @@ try
     builder.Services.AddSingleton(serviceProvider =>
     {
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
-        return new Watcher(TimeSpan.FromMilliseconds(1000), dataGenerator);
+        var dataInserter = serviceProvider.GetRequiredService<DataInserter>();
+        return new Watcher(TimeSpan.FromMilliseconds(1000), dataGenerator, dataInserter);
     });
     
 
