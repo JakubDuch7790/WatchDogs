@@ -9,7 +9,7 @@ using Serilog;
 
 namespace WatchDogs.FakeSource;
 
-public class DataGeneratorRepeaterBackroundTask : IDataGeneratorRepeaterBackroundTask
+public class Watcher : IWatcher
 {
     private Task? _timerTask;
     private readonly PeriodicTimer _timer;
@@ -19,16 +19,34 @@ public class DataGeneratorRepeaterBackroundTask : IDataGeneratorRepeaterBackroun
 
 
 
-    public DataGeneratorRepeaterBackroundTask(TimeSpan interval, IFakeTradeGenerator dataGenerator, ILogger loger)
+    public Watcher(TimeSpan interval, IFakeTradeGenerator dataGenerator)
     {
         _timer = new PeriodicTimer(interval);
         _dataGenerator = dataGenerator;
-        _logger = loger;
     }
 
-    public async Task StartAsync()
+    public async Task StartAsync(CancellationToken token = default)
     {
-        _timerTask = LoadFakeDataEverySecondAsync();
+        try
+        {
+            if (!token.IsCancellationRequested)
+            {
+                _timerTask = LoadFakeDataEverySecondAsync();
+            }
+            else
+            {
+                if(_timerTask is not null)
+                {
+                    _cts.Cancel();
+                    await _timerTask;
+                    _cts.Dispose();
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.Error("Cancelled");
+        }
     }
 
     private async Task LoadFakeDataEverySecondAsync()
@@ -44,16 +62,5 @@ public class DataGeneratorRepeaterBackroundTask : IDataGeneratorRepeaterBackroun
         {
             _logger.Error("Something went wrong.");
         }
-    }
-
-    public async Task StopAsync()
-    {
-        if (_timerTask is null)
-        {
-            return;
-        }
-        _cts.Cancel();
-        await _timerTask;
-        _cts.Dispose();
     }
 }

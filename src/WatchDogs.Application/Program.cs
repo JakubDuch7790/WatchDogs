@@ -49,7 +49,7 @@ try
     builder.Services.AddSingleton(serviceProvider =>
     {
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
-        return new DataGeneratorRepeaterBackroundTask(TimeSpan.FromMilliseconds(1000), dataGenerator);
+        return new Watcher(TimeSpan.FromMilliseconds(1000), dataGenerator);
     });
     
 
@@ -62,10 +62,10 @@ try
     {
         var services = serviceScope.ServiceProvider;
 
-        var bogusDataGenerator = services.GetRequiredService<DataGeneratorRepeaterBackroundTask>();
+        var bogusDataGenerator = services.GetRequiredService<Watcher>();
 
-        bogusDataGenerator.Start();
-        await bogusDataGenerator.StopAsync();
+        await bogusDataGenerator.StartAsync();
+        //await bogusDataGenerator.StopAsync();
 
         var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
 

@@ -1,8 +1,7 @@
 ﻿
 namespace WatchDogs.FakeSource;
 
-public interface IDataGeneratorRepeaterBackroundTask
+public interface IWatcher
 {
     Task StartAsync(CancellationToken token = default);
-    Task StopAsync();
 }
