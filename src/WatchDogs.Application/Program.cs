@@ -71,6 +71,8 @@ try
         var bogusDataGenerator = services.GetRequiredService<Watcher>();
 
         await bogusDataGenerator.StartAsync();
+
+        
         //await bogusDataGenerator.StopAsync();
 
         var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();

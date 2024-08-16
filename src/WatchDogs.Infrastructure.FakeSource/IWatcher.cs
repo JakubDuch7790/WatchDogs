@@ -1,5 +1,5 @@
 ﻿
-namespace WatchDogs.FakeSource;
+namespace WatchDogs.Infrastructure.FakeSource;
 
 public interface IWatcher
 {

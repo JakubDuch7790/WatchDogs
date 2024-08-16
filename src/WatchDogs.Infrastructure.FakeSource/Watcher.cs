@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Serilog;
 
-namespace WatchDogs.FakeSource;
+namespace WatchDogs.Infrastructure.FakeSource;
 
 public class Watcher : IWatcher
 {
@@ -16,13 +16,15 @@ public class Watcher : IWatcher
     private readonly CancellationTokenSource _cts = new();
     private readonly IFakeTradeGenerator _dataGenerator;
     private readonly ILogger _logger;
+    private readonly DataInserter _dataInserter;
 
 
 
-    public Watcher(TimeSpan interval, IFakeTradeGenerator dataGenerator)
+    public Watcher(TimeSpan interval, IFakeTradeGenerator dataGenerator, DataInserter dataInserter)
     {
         _timer = new PeriodicTimer(interval);
         _dataGenerator = dataGenerator;
+        _dataInserter = dataInserter;
     }
 
     public async Task StartAsync(CancellationToken token = default)

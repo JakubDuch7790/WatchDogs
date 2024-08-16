@@ -1,7 +1,7 @@
 ﻿
 using WatchDogs.Contracts;
 
-namespace WatchDogs.FakeSource;
+namespace WatchDogs.Infrastructure.FakeSource;
 
 public interface IFakeTradeGenerator
 {
