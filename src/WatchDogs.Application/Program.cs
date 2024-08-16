@@ -1,10 +1,12 @@
 using Contracts;
 using Infrastructure.DxTrade;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System.Net.Http.Headers;
 using WatchDogs.FakeSource;
+using WatchDogs.Persistence.EntityFramework;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -25,6 +27,10 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
+
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
+
     builder.Services.Configure<DxTradeConnectionOptions>(
         builder.Configuration.GetSection(nameof(DxTradeConnectionOptions)));
 
