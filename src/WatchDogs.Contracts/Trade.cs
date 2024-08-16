@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ public record Trade
     //decimal Lot
 
 {
+    [Key]
     public Guid Id { get; init; }
     public decimal AccountBalance { get; init; }
     public TradeAction Action { get; init; }
