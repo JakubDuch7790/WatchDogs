@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Bogus;
 using Microsoft.EntityFrameworkCore;
 using WatchDogs.Contracts;
+using WatchDogs.Persistence.EntityFramework;
 
 namespace WatchDogs.Infrastructure.FakeSource;
 
@@ -21,7 +22,7 @@ public class FakeTradeGenerator : IFakeTradeGenerator
 
     Faker<Trade> tradeModelFake;
 
-    private readonly DbContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly DbSet<Trade> _trades;
 
     private readonly string[] currencies =
@@ -35,7 +36,7 @@ public class FakeTradeGenerator : IFakeTradeGenerator
             "CNY", // Chinese Yuan
     ];
 
-    public FakeTradeGenerator(DbContext context)
+    public FakeTradeGenerator(ApplicationDbContext context)
     {
         /// This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
         ///Randomizer.Seed = new Random(123);

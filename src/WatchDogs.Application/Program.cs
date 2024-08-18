@@ -48,11 +48,12 @@ try
     });
 
     builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
-    builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>(); 
+    builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
 
     builder.Services.AddSingleton<DxTradeClient>();
+    builder.Services.AddTransient<DataInserter>();
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
-    builder.Services.AddSingleton(serviceProvider =>
+    builder.Services.AddTransient(serviceProvider =>
     {
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
         var dataInserter = serviceProvider.GetRequiredService<DataInserter>();
