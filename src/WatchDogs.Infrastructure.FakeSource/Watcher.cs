@@ -16,7 +16,7 @@ public class Watcher : IWatcher
     private readonly PeriodicTimer _timer;
     private readonly CancellationTokenSource _cts = new();
     private readonly IFakeTradeGenerator _dataGenerator;
-    //private readonly ILogger _logger;
+    private readonly ILogger _logger;
     private readonly IDataInserter _dataInserter;
 
 
