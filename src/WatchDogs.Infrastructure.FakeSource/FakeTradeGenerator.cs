@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bogus;
-using Microsoft.EntityFrameworkCore;
 using WatchDogs.Contracts;
-using WatchDogs.Persistence.EntityFramework;
 
 namespace WatchDogs.Infrastructure.FakeSource;
 

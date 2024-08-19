@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System.Net.Http.Headers;
+using WatchDogs.Contracts;
 using WatchDogs.Infrastructure.FakeSource;
 using WatchDogs.Persistence.EntityFramework;
 
@@ -57,7 +58,7 @@ try
     {
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
         var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
-        return new Watcher(TimeSpan.FromMilliseconds(1000), dataGenerator, dataInserter);
+        return new FakeSourceWatcher(TimeSpan.FromMilliseconds(1000), dataGenerator, dataInserter);
     });
     
 
@@ -70,7 +71,7 @@ try
     {
         var services = serviceScope.ServiceProvider;
 
-        var bogusDataGenerator = services.GetRequiredService<Watcher>();
+        var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();
 
         await bogusDataGenerator.StartAsync();
 

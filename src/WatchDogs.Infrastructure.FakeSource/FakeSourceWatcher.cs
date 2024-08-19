@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Serilog;
-using WatchDogs.Persistence.EntityFramework;
+using WatchDogs.Contracts;
 
 namespace WatchDogs.Infrastructure.FakeSource;
 
-public class Watcher : IWatcher
+public class FakeSourceWatcher : IWatcher
 {
     private Task? _timerTask;
     private readonly PeriodicTimer _timer;
@@ -21,7 +21,7 @@ public class Watcher : IWatcher
 
 
 
-    public Watcher(TimeSpan interval, IFakeTradeGenerator dataGenerator, IDataInserter dataInserter)
+    public FakeSourceWatcher(TimeSpan interval, IFakeTradeGenerator dataGenerator, IDataInserter dataInserter)
     {
         _timer = new PeriodicTimer(interval);
         _dataGenerator = dataGenerator;
