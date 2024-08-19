@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using WatchDogs.Contracts;
 
 namespace WatchDogs.Persistence.EntityFramework;
-public class DataInserter
+public class DataInserter : IDataInserter
 {
     private readonly ApplicationDbContext _context;
 

@@ -16,12 +16,12 @@ public class Watcher : IWatcher
     private readonly PeriodicTimer _timer;
     private readonly CancellationTokenSource _cts = new();
     private readonly IFakeTradeGenerator _dataGenerator;
-    private readonly ILogger _logger;
-    private readonly DataInserter _dataInserter;
+    //private readonly ILogger _logger;
+    private readonly IDataInserter _dataInserter;
 
 
 
-    public Watcher(TimeSpan interval, IFakeTradeGenerator dataGenerator, DataInserter dataInserter)
+    public Watcher(TimeSpan interval, IFakeTradeGenerator dataGenerator, IDataInserter dataInserter)
     {
         _timer = new PeriodicTimer(interval);
         _dataGenerator = dataGenerator;

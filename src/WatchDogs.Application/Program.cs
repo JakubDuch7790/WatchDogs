@@ -51,12 +51,12 @@ try
     builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
 
     builder.Services.AddSingleton<DxTradeClient>();
-    builder.Services.AddTransient<DataInserter>();
+    builder.Services.AddTransient<IDataInserter, DataInserter>();
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
     builder.Services.AddTransient(serviceProvider =>
     {
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
-        var dataInserter = serviceProvider.GetRequiredService<DataInserter>();
+        var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
         return new Watcher(TimeSpan.FromMilliseconds(1000), dataGenerator, dataInserter);
     });
     
