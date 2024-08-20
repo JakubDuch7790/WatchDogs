@@ -24,4 +24,26 @@ public class DataInserter : IDataInserter
 
         await _context.SaveChangesAsync();
     }
+    public async Task InsertTradeDatatoDbAsyncccc(IEnumerable<Trade> data)
+    {
+        // Toto neslo ale List<Task> ide
+        List<Task<IEnumerable<Trade>>> tasks = new();
+
+        List<Task> taskss = new();
+
+        foreach (var trade in data)
+        {
+            taskss.Add(AddSingleTrade(trade));
+        }
+
+        await Task.WhenAll(taskss);
+
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task AddSingleTrade(Trade trade)
+    {
+        await _context.Trades.AddAsync(trade);
+        //await _context.SaveChangesAsync();
+    }
 }

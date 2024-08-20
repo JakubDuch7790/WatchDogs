@@ -60,7 +60,7 @@ public class FakeSourceWatcher : IWatcher
             {
                 var tradesToInsert = _dataGenerator.LoadFakeData();
 
-                await _dataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
+                await _dataInserter.InsertTradeDatatoDbAsyncccc(tradesToInsert);
             }
         }
         catch (OperationCanceledException) 
