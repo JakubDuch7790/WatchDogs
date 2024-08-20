@@ -26,17 +26,14 @@ public class DataInserter : IDataInserter
     }
     public async Task InsertTradeDatatoDbAsyncccc(IEnumerable<Trade> data)
     {
-        // Toto neslo ale List<Task> ide
-        List<Task<IEnumerable<Trade>>> tasks = new();
-
-        List<Task> taskss = new();
+        List<Task> tasks = new();
 
         foreach (var trade in data)
         {
-            taskss.Add(AddSingleTrade(trade));
+            tasks.Add(AddSingleTrade(trade));
         }
 
-        await Task.WhenAll(taskss);
+        await Task.WhenAll(tasks);
 
         await _context.SaveChangesAsync();
     }
@@ -44,6 +41,5 @@ public class DataInserter : IDataInserter
     private async Task AddSingleTrade(Trade trade)
     {
         await _context.Trades.AddAsync(trade);
-        //await _context.SaveChangesAsync();
     }
 }
