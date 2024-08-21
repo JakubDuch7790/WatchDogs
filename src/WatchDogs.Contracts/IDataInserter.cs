@@ -8,5 +8,4 @@ namespace WatchDogs.Contracts;
 public interface IDataInserter
 {
     Task InsertTradeDatatoDbAsync(IEnumerable<Trade> data); 
-    Task InsertTradeDatatoDbAsyncccc(IEnumerable<Trade> data);
 }

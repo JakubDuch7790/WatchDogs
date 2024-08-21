@@ -17,15 +17,6 @@ public class DataInserter : IDataInserter
 
     public async Task InsertTradeDatatoDbAsync(IEnumerable<Trade> data)
     {
-        foreach (var trade in data)
-        {
-            await _context.Trades.AddAsync(trade);
-        }
-
-        await _context.SaveChangesAsync();
-    }
-    public async Task InsertTradeDatatoDbAsyncccc(IEnumerable<Trade> data)
-    {
         List<Task> tasks = new();
 
         foreach (var trade in data)

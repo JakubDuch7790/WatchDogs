@@ -1,8 +1,10 @@
 using Contracts;
 using Infrastructure.DxTrade;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http.Headers;
 using WatchDogs.Contracts;
@@ -54,16 +56,19 @@ try
     builder.Services.AddSingleton<DxTradeClient>();
     builder.Services.AddTransient<IDataInserter, DataInserter>();
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
+
+    builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
+
     builder.Services.AddTransient(serviceProvider =>
     {
+        var loger = serviceProvider.GetRequiredService<ILogger<FakeSourceWatcher>>();
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
         var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
-        return new FakeSourceWatcher(TimeSpan.FromMilliseconds(1000), dataGenerator, dataInserter);
+        return new FakeSourceWatcher(TimeSpan.FromMilliseconds(1000), dataGenerator, dataInserter, loger);
     });
     
 
-    builder.Host.UseSerilog((context, configuration) =>
-        configuration.ReadFrom.Configuration(context.Configuration));
 
     var app = builder.Build();
 
@@ -74,9 +79,6 @@ try
         var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();
 
         await bogusDataGenerator.StartAsync();
-
-        
-        //await bogusDataGenerator.StopAsync();
 
         var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
 
@@ -114,9 +116,3 @@ finally
 {
     Log.CloseAndFlush();
 }
-
-
-
-
-
-

@@ -1,11 +1,10 @@
-﻿using Serilog.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using WatchDogs.Contracts;
 
 namespace WatchDogs.Infrastructure.FakeSource;
@@ -16,16 +15,17 @@ public class FakeSourceWatcher : IWatcher
     private readonly PeriodicTimer _timer;
     private readonly CancellationTokenSource _cts = new();
     private readonly IFakeTradeGenerator _dataGenerator;
-    private readonly ILogger _logger;
     private readonly IDataInserter _dataInserter;
+    private readonly ILogger<FakeSourceWatcher> _logger;
 
 
 
-    public FakeSourceWatcher(TimeSpan interval, IFakeTradeGenerator dataGenerator, IDataInserter dataInserter)
+    public FakeSourceWatcher(TimeSpan interval, IFakeTradeGenerator dataGenerator, IDataInserter dataInserter, ILogger<FakeSourceWatcher> logger)
     {
         _timer = new PeriodicTimer(interval);
         _dataGenerator = dataGenerator;
         _dataInserter = dataInserter;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken token = default)
@@ -48,7 +48,7 @@ public class FakeSourceWatcher : IWatcher
         }
         catch (OperationCanceledException)
         {
-            _logger.Error("Cancelled");
+            _logger.LogError("Cancelled");
         }
     }
 
@@ -60,12 +60,12 @@ public class FakeSourceWatcher : IWatcher
             {
                 var tradesToInsert = _dataGenerator.LoadFakeData();
 
-                await _dataInserter.InsertTradeDatatoDbAsyncccc(tradesToInsert);
+                await _dataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
             }
         }
         catch (OperationCanceledException) 
         {
-            _logger.Error("Something went wrong.");
+            _logger.LogError("Something went wrong.");
         }
     }
 }
