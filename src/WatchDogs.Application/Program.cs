@@ -3,6 +3,7 @@ using Infrastructure.DxTrade;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -37,6 +38,9 @@ try
     builder.Services.Configure<DxTradeConnectionOptions>(
         builder.Configuration.GetSection(nameof(DxTradeConnectionOptions)));
 
+    builder.Services.Configure<FakeSourceOptions>(
+        builder.Configuration.GetSection(nameof(FakeSourceOptions)));
+
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
@@ -62,10 +66,11 @@ try
 
     builder.Services.AddTransient(serviceProvider =>
     {
+        var options = serviceProvider.GetRequiredService<IOptions<FakeSourceOptions>>();
         var loger = serviceProvider.GetRequiredService<ILogger<FakeSourceWatcher>>();
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
         var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
-        return new FakeSourceWatcher(TimeSpan.FromMilliseconds(1000), dataGenerator, dataInserter, loger);
+        return new FakeSourceWatcher(/*TimeSpan.FromMilliseconds(1000),*/ dataGenerator, dataInserter, loger, options);
     });
     
 

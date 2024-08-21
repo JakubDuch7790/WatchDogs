@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using WatchDogs.Contracts;
 
 namespace WatchDogs.Infrastructure.FakeSource;
@@ -17,12 +18,13 @@ public class FakeSourceWatcher : IWatcher
     private readonly IFakeTradeGenerator _dataGenerator;
     private readonly IDataInserter _dataInserter;
     private readonly ILogger<FakeSourceWatcher> _logger;
+    private readonly FakeSourceOptions _fakeSourceOptions;
 
-
-
-    public FakeSourceWatcher(TimeSpan interval, IFakeTradeGenerator dataGenerator, IDataInserter dataInserter, ILogger<FakeSourceWatcher> logger)
+    public FakeSourceWatcher(/*TimeSpan interval,*/ IFakeTradeGenerator dataGenerator, IDataInserter dataInserter, ILogger<FakeSourceWatcher> logger, IOptions<FakeSourceOptions> fakeSourceOptions)
     {
-        _timer = new PeriodicTimer(interval);
+        _fakeSourceOptions = fakeSourceOptions.Value;
+
+        _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(_fakeSourceOptions.IntervalInMilliseconds));
         _dataGenerator = dataGenerator;
         _dataInserter = dataInserter;
         _logger = logger;
