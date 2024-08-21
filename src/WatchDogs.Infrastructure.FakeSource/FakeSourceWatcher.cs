@@ -20,7 +20,7 @@ public class FakeSourceWatcher : IWatcher
     private readonly ILogger<FakeSourceWatcher> _logger;
     private readonly FakeSourceOptions _fakeSourceOptions;
 
-    public FakeSourceWatcher(/*TimeSpan interval,*/ IFakeTradeGenerator dataGenerator, IDataInserter dataInserter, ILogger<FakeSourceWatcher> logger, IOptions<FakeSourceOptions> fakeSourceOptions)
+    public FakeSourceWatcher(IFakeTradeGenerator dataGenerator, IDataInserter dataInserter, ILogger<FakeSourceWatcher> logger, IOptions<FakeSourceOptions> fakeSourceOptions)
     {
         _fakeSourceOptions = fakeSourceOptions.Value;
 

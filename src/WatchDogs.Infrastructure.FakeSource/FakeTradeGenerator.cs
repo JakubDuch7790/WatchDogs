@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bogus;
+using Microsoft.Extensions.Options;
 using WatchDogs.Contracts;
 
 namespace WatchDogs.Infrastructure.FakeSource;
@@ -20,6 +21,8 @@ public class FakeTradeGenerator : IFakeTradeGenerator
 
     Faker<Trade> tradeModelFake;
 
+    private readonly FakeTradegeneratorOptions _fakeTradegeneratorOptions;
+
     private readonly string[] currencies =
     [
             "USD", // United States Dollar
@@ -31,10 +34,12 @@ public class FakeTradeGenerator : IFakeTradeGenerator
             "CNY", // Chinese Yuan
     ];
 
-    public FakeTradeGenerator()
+    public FakeTradeGenerator(IOptions<FakeTradegeneratorOptions> options)
     {
         /// This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
         ///Randomizer.Seed = new Random(123);
+        
+        _fakeTradegeneratorOptions = options.Value;
 
         DateTimeOffset initialTimestamp = DateTimeOffset.Now;
 
@@ -56,7 +61,7 @@ public class FakeTradeGenerator : IFakeTradeGenerator
     {
         List<Trade> fakeDealsList = new List<Trade>();
 
-        var fakeTrades = tradeModelFake.GenerateForever().Take(new Random().Next(20, 100));
+        var fakeTrades = tradeModelFake.GenerateForever().Take(new Random().Next(_fakeTradegeneratorOptions.GeneratedTradesBottom, _fakeTradegeneratorOptions.GeneratedTradesTop));
 
         foreach (var trade in fakeTrades)
         {
