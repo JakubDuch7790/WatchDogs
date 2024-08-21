@@ -1,10 +1,16 @@
 using Contracts;
 using Infrastructure.DxTrade;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http.Headers;
-using WatchDogs.FakeSource;
+using WatchDogs.Contracts;
+using WatchDogs.Infrastructure.FakeSource;
+using WatchDogs.Persistence.EntityFramework;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -25,8 +31,15 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
+
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
+
     builder.Services.Configure<DxTradeConnectionOptions>(
         builder.Configuration.GetSection(nameof(DxTradeConnectionOptions)));
+
+    builder.Services.Configure<FakeSourceOptions>(
+        builder.Configuration.GetSection(nameof(FakeSourceOptions)));
 
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -42,19 +55,25 @@ try
     });
 
     builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
-    builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>(); 
+    builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
 
     builder.Services.AddSingleton<DxTradeClient>();
+    builder.Services.AddTransient<IDataInserter, DataInserter>();
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
-    builder.Services.AddSingleton(serviceProvider =>
+
+    builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
+
+    builder.Services.AddTransient(serviceProvider =>
     {
+        var options = serviceProvider.GetRequiredService<IOptions<FakeSourceOptions>>();
+        var loger = serviceProvider.GetRequiredService<ILogger<FakeSourceWatcher>>();
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
-        return new Watcher(TimeSpan.FromMilliseconds(1000), dataGenerator);
+        var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
+        return new FakeSourceWatcher(/*TimeSpan.FromMilliseconds(1000),*/ dataGenerator, dataInserter, loger, options);
     });
     
 
-    builder.Host.UseSerilog((context, configuration) =>
-        configuration.ReadFrom.Configuration(context.Configuration));
 
     var app = builder.Build();
 
@@ -62,10 +81,9 @@ try
     {
         var services = serviceScope.ServiceProvider;
 
-        var bogusDataGenerator = services.GetRequiredService<Watcher>();
+        var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();
 
         await bogusDataGenerator.StartAsync();
-        //await bogusDataGenerator.StopAsync();
 
         var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
 
@@ -103,9 +121,3 @@ finally
 {
     Log.CloseAndFlush();
 }
-
-
-
-
-
-

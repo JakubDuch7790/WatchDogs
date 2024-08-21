@@ -1,28 +1,33 @@
-﻿using Serilog.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using WatchDogs.Contracts;
 
-namespace WatchDogs.FakeSource;
+namespace WatchDogs.Infrastructure.FakeSource;
 
-public class Watcher : IWatcher
+public class FakeSourceWatcher : IWatcher
 {
     private Task? _timerTask;
     private readonly PeriodicTimer _timer;
     private readonly CancellationTokenSource _cts = new();
     private readonly IFakeTradeGenerator _dataGenerator;
-    private readonly ILogger _logger;
+    private readonly IDataInserter _dataInserter;
+    private readonly ILogger<FakeSourceWatcher> _logger;
+    private readonly FakeSourceOptions _fakeSourceOptions;
 
-
-
-    public Watcher(TimeSpan interval, IFakeTradeGenerator dataGenerator)
+    public FakeSourceWatcher(/*TimeSpan interval,*/ IFakeTradeGenerator dataGenerator, IDataInserter dataInserter, ILogger<FakeSourceWatcher> logger, IOptions<FakeSourceOptions> fakeSourceOptions)
     {
-        _timer = new PeriodicTimer(interval);
+        _fakeSourceOptions = fakeSourceOptions.Value;
+
+        _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(_fakeSourceOptions.IntervalInMilliseconds));
         _dataGenerator = dataGenerator;
+        _dataInserter = dataInserter;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken token = default)
@@ -45,7 +50,7 @@ public class Watcher : IWatcher
         }
         catch (OperationCanceledException)
         {
-            _logger.Error("Cancelled");
+            _logger.LogError("Cancelled");
         }
     }
 
@@ -55,12 +60,14 @@ public class Watcher : IWatcher
         {
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
-                _dataGenerator.LoadFakeData();
+                var tradesToInsert = _dataGenerator.LoadFakeData();
+
+                await _dataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
             }
         }
         catch (OperationCanceledException) 
         {
-            _logger.Error("Something went wrong.");
+            _logger.LogError("Something went wrong.");
         }
     }
 }

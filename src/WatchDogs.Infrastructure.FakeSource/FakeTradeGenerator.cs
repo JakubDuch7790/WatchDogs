@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Bogus;
 using WatchDogs.Contracts;
 
-namespace WatchDogs.FakeSource;
+namespace WatchDogs.Infrastructure.FakeSource;
 
 //Deal #1, Balance 10 000, Buy EURUSD 1 lot at 2019-05-12 14:43:12
 //Deal #2, Balance 10 000, Sell GBPUSD 0.2 lots at 2019-05-12 14:43:23
