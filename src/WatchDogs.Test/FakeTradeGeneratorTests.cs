@@ -11,38 +11,35 @@ using WatchDogs.Infrastructure.FakeSource;
 namespace WatchDogs.Test;
 public class FakeTradeGeneratorTests
 {
-    private readonly FakeTradeGenerator _generator;
     public FakeTradeGeneratorTests()
     {
+
+    }
+
+    [Theory]
+    [InlineData(5, 50)]
+    [InlineData(1, 10)]
+    [InlineData(20, 30)]
+    [InlineData(0, 2)]
+    public void LoadFakeData_ShouldLoadDataInRangeProvidedByConfig(int bottom, int top)
+    {
+        //Arrange
         var optionsMock = new Mock<IOptions<FakeTradegeneratorOptions>>();
 
         var connectionOptions = new FakeTradegeneratorOptions
         {
-            GeneratedTradesTop = 50,
-            GeneratedTradesBottom = 5
+            GeneratedTradesTop = top,
+            GeneratedTradesBottom = bottom
         };
 
         optionsMock.Setup(o => o.Value).Returns(connectionOptions);
 
-        _generator = new FakeTradeGenerator(optionsMock.Object);
-
-    }
-    [Fact]
-    public void LoadFakeData_ShouldLoadDataInRangeProvidedByConfig()
-    {
-        //Arrange
-
-        FakeTradeGenerator fake = _generator;
-
-        int low = 5;
-        int high = 50;
+        FakeTradeGenerator fake = new(optionsMock.Object);
 
         //Act
-
         var generatedData = fake.LoadFakeData();
 
         //Assert
-
-        Assert.InRange<int>(generatedData.Count(), low, high);
+        Assert.InRange<int>(generatedData.Count(), bottom, top);
     }
 }
