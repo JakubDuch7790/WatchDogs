@@ -34,9 +34,27 @@ public class FakeSourceWatcherTests
         _fakeSourceWatcher = new(_fakeTradeGenerator.Object, _dataInserter.Object, nullLogger, optionsMock.Object);
     }
     [Fact]
-    public async Task StartAsync_ShouldGenerateAndStoreSessionToken_InCaseOfSuccessfullResponse()
+    public async Task StartAsync_StartProcessOfLoadingData_InCaseOfValidCancelletationToken()
     {
-
+        //Arrange
+        //Act
+        await _fakeSourceWatcher.StartAsync();
+        //Assert
     }
+    [Fact]
+    public async Task StartAsync_StopProcessOfLoadingData_InCaseOfCancelletationTokenRequest()
+    {
+        //Arrange
+        //Act
+        //Assert
+    }
+    [Fact]
+    public async Task StartAsync_ThrowsAnException_InCaseOfSomeError()
+    {
+        //Arrange
+        //Act
+        //Assert
+    }
+
 
 }
