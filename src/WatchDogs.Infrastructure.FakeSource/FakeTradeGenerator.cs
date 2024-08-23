@@ -4,21 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bogus;
+using Microsoft.Extensions.Options;
 using WatchDogs.Contracts;
 
 namespace WatchDogs.Infrastructure.FakeSource;
-
-//Deal #1, Balance 10 000, Buy EURUSD 1 lot at 2019-05-12 14:43:12
-//Deal #2, Balance 10 000, Sell GBPUSD 0.2 lots at 2019-05-12 14:43:23
-//Deal #3, Balance 1 000, Sell GBPUSD 1.2 lots at 2019-05-12 14:43:23
-//Deal #4, Balance 10 000, Sell GBPUSD 0.21 lot at 2019-05-12 14:43:24 <- triggered match with deal #2
-//Deal #5, Balance 20 000, Sell GBPUSD 0.4 lot at 2019-05-12 14:43:24 <- triggered match with deal #2 and deal #4
 
 public class FakeTradeGenerator : IFakeTradeGenerator
 {
     // This holds an information or set of rules for generating fake data for Trade
 
     Faker<Trade> tradeModelFake;
+
+    private readonly FakeTradegeneratorOptions _fakeTradegeneratorOptions;
+    private readonly Random _random = new Random();
 
     private readonly string[] currencies =
     [
@@ -31,10 +29,12 @@ public class FakeTradeGenerator : IFakeTradeGenerator
             "CNY", // Chinese Yuan
     ];
 
-    public FakeTradeGenerator()
+    public FakeTradeGenerator(IOptions<FakeTradegeneratorOptions> options)
     {
         /// This field is optional and it allows us to replicate the results (everytime we runs an application, the app will generate same results)
         ///Randomizer.Seed = new Random(123);
+        
+        _fakeTradegeneratorOptions = options.Value;
 
         DateTimeOffset initialTimestamp = DateTimeOffset.Now;
 
@@ -56,7 +56,7 @@ public class FakeTradeGenerator : IFakeTradeGenerator
     {
         List<Trade> fakeDealsList = new List<Trade>();
 
-        var fakeTrades = tradeModelFake.GenerateForever().Take(new Random().Next(20, 100));
+        var fakeTrades = tradeModelFake.GenerateForever().Take(_random.Next(_fakeTradegeneratorOptions.GeneratedTradesBottom, _fakeTradegeneratorOptions.GeneratedTradesTop));
 
         foreach (var trade in fakeTrades)
         {

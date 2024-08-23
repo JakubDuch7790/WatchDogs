@@ -57,11 +57,9 @@ public class DxTradeAuthenticatorTests
             return response;
         });
         //Act
-
         string token = await _authenticator.AuthenticateAsync();
 
         //Assert
-
         Assert.Equal(_testingToken, token);
     }
 

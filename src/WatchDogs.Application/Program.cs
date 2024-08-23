@@ -32,15 +32,21 @@ try
 
     // Add services to the container.
 
+    //Database
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 
+    //Config options
     builder.Services.Configure<DxTradeConnectionOptions>(
         builder.Configuration.GetSection(nameof(DxTradeConnectionOptions)));
 
     builder.Services.Configure<FakeSourceOptions>(
         builder.Configuration.GetSection(nameof(FakeSourceOptions)));
 
+    builder.Services.Configure<FakeTradegeneratorOptions>(
+        builder.Configuration.GetSection(nameof(FakeTradegeneratorOptions)));
+
+    //Other stuff
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
@@ -70,7 +76,7 @@ try
         var loger = serviceProvider.GetRequiredService<ILogger<FakeSourceWatcher>>();
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
         var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
-        return new FakeSourceWatcher(/*TimeSpan.FromMilliseconds(1000),*/ dataGenerator, dataInserter, loger, options);
+        return new FakeSourceWatcher(dataGenerator, dataInserter, loger, options);
     });
     
 
