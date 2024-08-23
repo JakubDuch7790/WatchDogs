@@ -11,11 +11,6 @@ using WatchDogs.Infrastructure.FakeSource;
 namespace WatchDogs.Test;
 public class FakeTradeGeneratorTests
 {
-    public FakeTradeGeneratorTests()
-    {
-
-    }
-
     [Theory]
     [InlineData(5, 50)]
     [InlineData(1, 10)]
