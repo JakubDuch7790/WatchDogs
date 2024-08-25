@@ -90,7 +90,7 @@ try
 
         var dataLoader = services.GetService<IDataLoader>();
 
-        dataLoader.LoadAllTrades();
+        await dataLoader.LoadAllTradesAsync();
 
         var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();
 
