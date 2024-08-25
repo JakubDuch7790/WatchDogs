@@ -78,6 +78,8 @@ try
         var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
         return new FakeSourceWatcher(dataGenerator, dataInserter, loger, options);
     });
+
+    builder.Services.AddTransient<IDataLoader, DataLoader>();
     
 
 
@@ -86,6 +88,9 @@ try
     using (var serviceScope = app.Services.CreateScope())
     {
         var services = serviceScope.ServiceProvider;
+
+        var dataLoader = services.GetService<IDataLoader>();
+        dataLoader.LoadAllTradesAsync();
 
         var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();
 
