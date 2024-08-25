@@ -16,8 +16,8 @@ public class DataLoader : IDataLoader
         _context = context;
     }
 
-    public void LoadAllTradesAsync()
+    public List<Trade> LoadAllTrades()
     {
-       _context.Trades.ToList();
+       return _context.Trades.ToList();
     }
 }
