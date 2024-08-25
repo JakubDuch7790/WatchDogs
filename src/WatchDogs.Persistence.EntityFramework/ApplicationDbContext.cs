@@ -14,4 +14,5 @@ public class ApplicationDbContext : DbContext
         
     }
     public DbSet<Trade> Trades { get; set; }
+    public DbSet<Trade> SuspiciousTrades { get; set; }
 }

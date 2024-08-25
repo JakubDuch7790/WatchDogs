@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 namespace WatchDogs.Contracts;
 public interface IDataLoader
 {
-    List<Trade> LoadAllTrades();
+    Task<List<Trade>> LoadAllTradesAsync();
 }

@@ -52,6 +52,7 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    //DxTrade platform related stuff
     builder.Services.AddHttpClient(DxTradeConstants.DxTradeAuthenticationClient, client => {
         client.BaseAddress = new Uri("https://dxtrade.ftmo.com/api/auth/");
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
@@ -59,12 +60,14 @@ try
         client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(new ProductHeaderValue("User-Agent")));
     });
-
     builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
     builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
-
     builder.Services.AddSingleton<DxTradeClient>();
+
+    //Services that query the Db
     builder.Services.AddTransient<IDataInserter, DataInserter>();
+    builder.Services.AddTransient<IDataLoader, DataLoader>();
+
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
 
     builder.Host.UseSerilog((context, configuration) =>
@@ -79,10 +82,6 @@ try
         return new FakeSourceWatcher(dataGenerator, dataInserter, loger, options);
     });
 
-    builder.Services.AddTransient<IDataLoader, DataLoader>();
-    
-
-
     var app = builder.Build();
 
     using (var serviceScope = app.Services.CreateScope())
@@ -90,6 +89,7 @@ try
         var services = serviceScope.ServiceProvider;
 
         var dataLoader = services.GetService<IDataLoader>();
+
         dataLoader.LoadAllTrades();
 
         var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();

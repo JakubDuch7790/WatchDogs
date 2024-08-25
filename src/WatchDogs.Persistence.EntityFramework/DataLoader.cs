@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,8 +17,8 @@ public class DataLoader : IDataLoader
         _context = context;
     }
 
-    public List<Trade> LoadAllTrades()
+    public async Task<List<Trade>> LoadAllTradesAsync()
     {
-       return _context.Trades.ToList();
+       return await _context.Trades.ToListAsync();
     }
 }
