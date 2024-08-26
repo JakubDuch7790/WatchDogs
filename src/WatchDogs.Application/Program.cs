@@ -9,6 +9,7 @@ using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http.Headers;
 using WatchDogs.Contracts;
+using WatchDogs.Domain;
 using WatchDogs.Infrastructure.FakeSource;
 using WatchDogs.Persistence.EntityFramework;
 
@@ -73,6 +74,7 @@ try
     builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
+    //Very custom Services
     builder.Services.AddTransient(serviceProvider =>
     {
         var options = serviceProvider.GetRequiredService<IOptions<FakeSourceOptions>>();
@@ -80,6 +82,13 @@ try
         var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
         var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
         return new FakeSourceWatcher(dataGenerator, dataInserter, loger, options);
+    });
+
+    builder.Services.AddTransient(serviceProvider =>
+    {
+        var dataLoader = serviceProvider.GetRequiredService<IDataLoader>();
+
+        return new SuspiciousDealDetector(dataLoader);
     });
 
     var app = builder.Build();

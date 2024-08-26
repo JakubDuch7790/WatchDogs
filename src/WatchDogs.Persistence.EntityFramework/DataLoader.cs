@@ -19,6 +19,7 @@ public class DataLoader : IDataLoader
 
     public async Task<List<Trade>> LoadAllTradesAsync()
     {
-       return await _context.Trades.ToListAsync();
+       return await _context.Trades/*.Where(trade => trade.IsProccessed == false)*/.ToListAsync();
     }
+
 }
