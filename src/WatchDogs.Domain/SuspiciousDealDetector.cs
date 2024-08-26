@@ -11,8 +11,8 @@ namespace WatchDogs.Domain;
 public class SuspiciousDealDetector : ISuspiciousDealDetector
 {
     private readonly IDataLoader _dataLoader;
-    private List<ICurrencyBucket> _currencyBuckets = new List<ICurrencyBucket>();
-    private ConcurrentDictionary<string, ICurrencyBucket> _currencyTradesPairs;
+    //private List<ICurrencyBucket> _currencyBuckets = new List<ICurrencyBucket>();
+    public ConcurrentDictionary<string, ICurrencyBucket> _currencyTradesPairs = new ConcurrentDictionary<string, ICurrencyBucket>();
     public SuspiciousDealDetector(IDataLoader dataLoader)
     {
         _dataLoader = dataLoader;
@@ -22,9 +22,9 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     {
         return await _dataLoader.LoadAllTradesAsync();
     }
-    public async Task SortTradesByCurrencyPairsAsync()
+    public async Task SortTradesByCurrencyPairsAsync(List<Trade> trades)
     {
-        var trades = await LoadDealsAsync();
+        //var trades = await LoadDealsAsync();
 
         foreach (var trade in trades)
         {

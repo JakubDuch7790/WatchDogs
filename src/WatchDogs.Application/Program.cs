@@ -99,6 +99,14 @@ try
 
         var dataLoader = services.GetService<IDataLoader>();
 
+        var suspiciousDealDetector = services.GetService<ISuspiciousDealDetector>();
+
+        await suspiciousDealDetector.LoadDealsAsync();
+
+        //magic
+        await suspiciousDealDetector.SortTradesByCurrencyPairsAsync(await suspiciousDealDetector.LoadDealsAsync());
+
+
         await dataLoader.LoadAllTradesAsync();
 
         var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();

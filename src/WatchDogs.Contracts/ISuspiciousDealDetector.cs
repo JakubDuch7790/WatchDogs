@@ -8,4 +8,5 @@ namespace WatchDogs.Contracts;
 public interface ISuspiciousDealDetector
 {
     Task<List<Trade>> LoadDealsAsync();
+    Task SortTradesByCurrencyPairsAsync(List<Trade> trades);
 }
