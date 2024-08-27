@@ -99,12 +99,12 @@ try
 
         var dataLoader = services.GetService<IDataLoader>();
 
-        var suspiciousDealDetector = services.GetService<ISuspiciousDealDetector>();
+        var suspiciousDealDetector = services.GetService<SuspiciousDealDetector>();
 
-        await suspiciousDealDetector.LoadDealsAsync();
+        var aa = await suspiciousDealDetector.LoadDealsAsync();
 
         //magic
-        await suspiciousDealDetector.SortTradesByCurrencyPairsAsync(await suspiciousDealDetector.LoadDealsAsync());
+        await suspiciousDealDetector.SortTradesByCurrencyPairsAsync(aa);
 
 
         await dataLoader.LoadAllTradesAsync();
