@@ -12,8 +12,8 @@ using WatchDogs.Persistence.EntityFramework;
 namespace WatchDogs.Persistence.EntityFramework.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240826184004_SuspiciousTradesTableadded")]
-    partial class SuspiciousTradesTableadded
+    [Migration("20240831090636_AddTradesTableToDbAndDbReset")]
+    partial class AddTradesTableToDbAndDbReset
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,7 +52,7 @@ namespace WatchDogs.Persistence.EntityFramework.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Trade");
+                    b.ToTable("Trades");
                 });
 #pragma warning restore 612, 618
         }

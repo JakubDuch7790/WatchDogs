@@ -101,25 +101,27 @@ try
 
         var suspiciousDealDetector = services.GetService<SuspiciousDealDetector>();
 
-        var aa = await suspiciousDealDetector.LoadDealsAsync();
-
-        //magic
-        await suspiciousDealDetector.SortTradesByCurrencyPairsAsync(aa);
-
-
-        await dataLoader.LoadAllTradesAsync();
-
         var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();
 
         await bogusDataGenerator.StartAsync();
 
-        var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
 
-        await dxTradeAuthenticator.AuthenticateAsync();
+        //var aa = await suspiciousDealDetector.LoadDealsAsync();
 
-        var dxTradeClient = services.GetRequiredService<DxTradeClient>();
+        ////magic
+        //await suspiciousDealDetector.SortTradesByCurrencyPairsAsync(aa);
 
-        await dxTradeClient.EstablishWebSocketConnectionAsync(dxTradeAuthenticator.AuthenticateAsync().Result);
+
+        //await dataLoader.LoadAllTradesAsync();
+
+
+        //var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
+
+        //await dxTradeAuthenticator.AuthenticateAsync();
+
+        //var dxTradeClient = services.GetRequiredService<DxTradeClient>();
+
+        //await dxTradeClient.EstablishWebSocketConnectionAsync(dxTradeAuthenticator.AuthenticateAsync().Result);
     }
 
     // Configure the HTTP request pipeline.

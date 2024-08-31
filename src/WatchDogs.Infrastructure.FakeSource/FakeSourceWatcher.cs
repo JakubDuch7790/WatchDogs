@@ -60,9 +60,14 @@ public class FakeSourceWatcher : IWatcher
         {
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
+                _logger.LogInformation("Fake data are about to be created.");
                 var tradesToInsert = _dataGenerator.LoadFakeData();
+                _logger.LogInformation("Fake data have been created successfully.");
 
+                _logger.LogInformation("Fake data are about to be inserted into Db.");
                 await _dataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
+                _logger.LogInformation("Fake data have been inserted into Db successfully.");
+
             }
         }
         catch (OperationCanceledException) 

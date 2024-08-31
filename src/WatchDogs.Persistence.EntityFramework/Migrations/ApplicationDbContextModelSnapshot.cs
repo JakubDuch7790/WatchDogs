@@ -49,7 +49,7 @@ namespace WatchDogs.Persistence.EntityFramework.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Trade");
+                    b.ToTable("Trades");
                 });
 #pragma warning restore 612, 618
         }

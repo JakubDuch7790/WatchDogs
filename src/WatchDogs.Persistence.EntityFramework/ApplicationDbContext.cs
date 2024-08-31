@@ -14,5 +14,10 @@ public class ApplicationDbContext : DbContext
         
     }
     public DbSet<Trade> Trades { get; set; }
-    public DbSet<Trade> SuspiciousTrades { get; set; }
+
+    //protected override void OnModelCreating(ModelBuilder modelBuilder)
+    //{
+    //    modelBuilder.Entity<Trade>()
+    //        .ToTable("Trades");
+    //}
 }
