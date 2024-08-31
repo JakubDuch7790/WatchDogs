@@ -8,6 +8,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http.Headers;
+using WatchDogs.Application;
 using WatchDogs.Contracts;
 using WatchDogs.Domain;
 using WatchDogs.Infrastructure.FakeSource;
@@ -74,55 +75,14 @@ try
     builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-    //Very custom Services
-    builder.Services.AddTransient(serviceProvider =>
-    {
-        var options = serviceProvider.GetRequiredService<IOptions<FakeSourceOptions>>();
-        var loger = serviceProvider.GetRequiredService<ILogger<FakeSourceWatcher>>();
-        var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
-        var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
-        return new FakeSourceWatcher(dataGenerator, dataInserter, loger, options);
-    });
+    builder.Services.AddSingleton<IWatcher, FakeSourceWatcher>();
+    builder.Services.AddTransient<ISuspiciousDealDetector, SuspiciousDealDetector>();
 
-    builder.Services.AddTransient(serviceProvider =>
-    {
-        var dataLoader = serviceProvider.GetRequiredService<IDataLoader>();
-
-        return new SuspiciousDealDetector(dataLoader);
-    });
+    builder.Services.AddHostedService<WatcherBackgroundService>();
 
     var app = builder.Build();
 
-    using (var serviceScope = app.Services.CreateScope())
-    {
-        var services = serviceScope.ServiceProvider;
-
-        var dataLoader = services.GetService<IDataLoader>();
-
-        var suspiciousDealDetector = services.GetService<SuspiciousDealDetector>();
-
-        var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();
-
-        await bogusDataGenerator.StartAsync();
-
-
-        //var aa = await suspiciousDealDetector.LoadDealsAsync();
-
-        ////magic
-        //await suspiciousDealDetector.SortTradesByCurrencyPairsAsync(aa);
-
-
-        //await dataLoader.LoadAllTradesAsync();
-
-
-        //var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
-
-        //await dxTradeAuthenticator.AuthenticateAsync();
-
-        //var dxTradeClient = services.GetRequiredService<DxTradeClient>();
-
-        //await dxTradeClient.EstablishWebSocketConnectionAsync(dxTradeAuthenticator.AuthenticateAsync().Result);
-    }
+    
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())

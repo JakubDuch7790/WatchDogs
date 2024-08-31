@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using WatchDogs.Contracts;
 
 namespace WatchDogs.Persistence.EntityFramework;
+
 public class DataInserter : IDataInserter
 {
     private readonly ApplicationDbContext _context;
@@ -17,16 +18,16 @@ public class DataInserter : IDataInserter
 
     public async Task InsertTradeDatatoDbAsync(IEnumerable<Trade> data)
     {
-        List<Task> tasks = new();
-
-        foreach (var trade in data)
+        try
         {
-            tasks.Add(AddSingleTrade(trade));
+            await _context.Trades.AddRangeAsync(data);
+
+            await _context.SaveChangesAsync();
         }
-
-        await Task.WhenAll(tasks);
-
-        await _context.SaveChangesAsync();
+        catch (Exception ex)
+        {
+            //TODO: add logging
+        }
     }
 
     private async Task AddSingleTrade(Trade trade)

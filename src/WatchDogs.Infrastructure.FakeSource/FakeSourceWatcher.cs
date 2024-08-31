@@ -60,6 +60,8 @@ public class FakeSourceWatcher : IWatcher
         {
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
+                // Tu si vytvoris unit of work
+
                 _logger.LogInformation("Fake data are about to be created.");
                 var tradesToInsert = _dataGenerator.LoadFakeData();
                 _logger.LogInformation("Fake data have been created successfully.");
