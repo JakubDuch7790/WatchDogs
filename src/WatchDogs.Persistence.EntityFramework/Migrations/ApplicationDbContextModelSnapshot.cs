@@ -38,9 +38,6 @@ namespace WatchDogs.Persistence.EntityFramework.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsProccessed")
-                        .HasColumnType("bit");
-
                     b.Property<decimal>("Lot")
                         .HasColumnType("decimal(18,2)");
 

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WatchDogs.Persistence.EntityFramework.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTradesTableToDbAndDbReset : Migration
+    public partial class DbReset : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,8 +20,7 @@ namespace WatchDogs.Persistence.EntityFramework.Migrations
                     Action = table.Column<int>(type: "int", nullable: false),
                     TimeStamp = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     Currency = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Lot = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsProccessed = table.Column<bool>(type: "bit", nullable: false)
+                    Lot = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
