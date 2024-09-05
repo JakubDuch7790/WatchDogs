@@ -3,7 +3,7 @@ using WatchDogs.Contracts;
 
 namespace WatchDogs.Persistence.EntityFramework;
 
-public class EntityFrameworkUnitOfWorkFactory //TODO: create an interface
+public class EntityFrameworkUnitOfWorkFactory
 {
     private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
 

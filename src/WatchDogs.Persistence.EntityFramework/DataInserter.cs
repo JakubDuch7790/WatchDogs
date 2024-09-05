@@ -22,7 +22,7 @@ public class DataInserter : IDataInserter
         {
             await _context.Trades.AddRangeAsync(data);
 
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
         }
         catch (Exception ex)
         {

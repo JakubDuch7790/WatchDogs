@@ -1,5 +1,6 @@
 ﻿
 using WatchDogs.Contracts;
+using WatchDogs.Persistence.EntityFramework;
 
 namespace WatchDogs.Application;
 
@@ -14,10 +15,13 @@ public class WatcherBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = _scopeFactory.CreateScope();
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            using var scope = _scopeFactory.CreateScope();
 
-        var watcher = scope.ServiceProvider.GetRequiredService<IWatcher>();
+            var watcher = scope.ServiceProvider.GetRequiredService<IWatcher>();
 
-        await watcher.StartAsync(stoppingToken);
+            await watcher.StartAsync(stoppingToken);
+        }
     }
 }

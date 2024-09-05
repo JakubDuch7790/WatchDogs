@@ -35,7 +35,7 @@ try
     // Add services to the container.
 
     //Database
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 
     //Config options
@@ -67,7 +67,7 @@ try
     builder.Services.AddSingleton<DxTradeClient>();
 
     //Services that query the Db
-    builder.Services.AddTransient<IDataInserter, DataInserter>();
+    //builder.Services.AddTransient<IDataInserter, DataInserter>();
     builder.Services.AddTransient<IDataLoader, DataLoader>();
 
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
@@ -75,8 +75,12 @@ try
     builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-    builder.Services.AddSingleton<IWatcher, FakeSourceWatcher>();
+    builder.Services.AddTransient<IWatcher, FakeSourceWatcher>();
     builder.Services.AddTransient<ISuspiciousDealDetector, SuspiciousDealDetector>();
+
+    builder.Services.AddScoped<IUnitOfWork, EntityFrameworkUnitOfWork>();
+    builder.Services.AddScoped<IDataInserter, DataInserter>();
+
 
     builder.Services.AddHostedService<WatcherBackgroundService>();
 

@@ -24,7 +24,7 @@ public record Trade
     public DateTimeOffset TimeStamp { get; init; }
     public string Currency { get; init; }
     public decimal Lot { get; init; }
-    public bool IsProccessed { get; set; } = false;
+    //public bool IsProccessed { get; set; } = false;
 
     public override string ToString()
     {
