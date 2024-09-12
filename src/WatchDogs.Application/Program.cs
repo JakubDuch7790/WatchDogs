@@ -75,6 +75,7 @@ try
     builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
+    //Custom Services
     builder.Services.AddTransient<IWatcher, FakeSourceWatcher>();
     builder.Services.AddTransient<ISuspiciousDealDetector, SuspiciousDealDetector>();
 
@@ -86,6 +87,15 @@ try
 
     var app = builder.Build();
 
+    using (var serviceScope = app.Services.CreateScope())
+    {
+        var services = serviceScope.ServiceProvider;
+
+        var SSD = services.GetRequiredService<ISuspiciousDealDetector>();
+
+        var loadedTrades = await SSD.LoadDealsAsync();
+
+    }
     
 
     // Configure the HTTP request pipeline.

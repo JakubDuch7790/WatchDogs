@@ -19,7 +19,6 @@ public class FakeSourceWatcher : IWatcher
     private readonly PeriodicTimer _timer;
     private readonly CancellationTokenSource _cts = new();
     private readonly IFakeTradeGenerator _dataGenerator;
-    //private readonly IDataInserter _dataInserter;
     private readonly ILogger<FakeSourceWatcher> _logger;
     private readonly FakeSourceOptions _fakeSourceOptions;
     private readonly IServiceScopeFactory _scopeFactory;
@@ -31,7 +30,6 @@ public class FakeSourceWatcher : IWatcher
         _scopeFactory = scopeFactory;
         _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(_fakeSourceOptions.IntervalInMilliseconds));
         _dataGenerator = dataGenerator;
-        //_dataInserter = dataInserter;
         _logger = logger;
         _dbContextOptions = dbContextOptions;
 
@@ -67,13 +65,9 @@ public class FakeSourceWatcher : IWatcher
         {
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
-                // Tu si vytvoris unit of work
+                var unitOfWorkFactory = new EntityFrameworkUnitOfWorkFactory(_dbContextOptions);
 
-                //using var scope = _scopeFactory.CreateScope();
-                //var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-                var unitOfWork = new EntityFrameworkUnitOfWorkFactory(_dbContextOptions);
-
-                var uow = unitOfWork.Create();
+                var unitOfWork = unitOfWorkFactory.Create();
 
                 _logger.LogInformation("Fake data are about to be created.");
 
@@ -83,14 +77,12 @@ public class FakeSourceWatcher : IWatcher
 
                 _logger.LogInformation("Fake data are about to be inserted into Db.");
 
-                //await _dataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
+                await unitOfWork.DataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
 
-                await uow.DataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
                 try
                 {
-                    
+                    await unitOfWork.SaveAsync();
 
-                    await uow.SaveAsync();
                     if (_cts.Token.IsCancellationRequested)
                     {
                         _logger.LogInformation("Cancellation requested.");
@@ -101,9 +93,7 @@ public class FakeSourceWatcher : IWatcher
                     _logger.LogError($"{ex.Message}");
                 }
 
-
                 _logger.LogInformation("Fake data have been inserted into Db successfully.");
-
             }
         }
         catch (OperationCanceledException) 

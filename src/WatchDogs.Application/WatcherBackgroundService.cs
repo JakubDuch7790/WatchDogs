@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Extensions.FileSystemGlobbing;
 using WatchDogs.Contracts;
 using WatchDogs.Persistence.EntityFramework;
 
@@ -25,6 +26,7 @@ public class WatcherBackgroundService : BackgroundService
         //    // Ja len tak ich viem startnut asynchronne.
         //    await watcher.StartAsync(stoppingToken);
         //}
+
         await watcher.StartAsync(stoppingToken);
 
     }
