@@ -88,7 +88,13 @@ public class FakeSourceWatcher : IWatcher
                 await uow.DataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
                 try
                 {
+                    
+
                     await uow.SaveAsync();
+                    if (_cts.Token.IsCancellationRequested)
+                    {
+                        _logger.LogInformation("Cancellation requested.");
+                    }
                 }
                 catch (Exception ex)
                 {
