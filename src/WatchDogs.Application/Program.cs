@@ -48,6 +48,9 @@ try
     builder.Services.Configure<FakeTradegeneratorOptions>(
         builder.Configuration.GetSection(nameof(FakeTradegeneratorOptions)));
 
+    builder.Services.Configure<SuspiciousDealsDetectorOptions>(
+        builder.Configuration.GetSection(nameof(SuspiciousDealsDetectorOptions)));
+
     //Other stuff
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -95,8 +98,10 @@ try
 
         var loadedTrades = await SSD.LoadDealsAsync();
 
+        await SSD.SortTradesByCurrencyPairsAsync(loadedTrades);
+
     }
-    
+
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
