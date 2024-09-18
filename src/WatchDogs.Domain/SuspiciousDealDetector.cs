@@ -6,6 +6,7 @@ namespace WatchDogs.Domain;
 
 public class SuspiciousDealDetector : ISuspiciousDealDetector
 {
+    private const decimal VolumeToBalanceTolerance = 0.05M;
     private readonly IDataLoader _dataLoader;
     private readonly SuspiciousDealDetectorOptions _suspiciousDealDetectorOptions;
 
@@ -71,9 +72,15 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     // Let's first find out if we can calculate that Volume-to-Balance ratio thing
     private decimal VolumeToBalanceRatioCalculator(Trade trade)
     {
-        return (trade.Lot * _suspiciousDealDetectorOptions.NanoLot) / trade.AccountBalance;
+        return (trade.Lot * _suspiciousDealDetectorOptions.MicroLot) / trade.AccountBalance;
     }
+    private bool HasAcceptableVolumeToBalanceDifference(Trade trade1, Trade trade2)
+    {
+        var VolumeToBalanceRatio1 = VolumeToBalanceRatioCalculator(trade1);
+        var VolumeToBalanceRatio2 = VolumeToBalanceRatioCalculator(trade2);
 
-    //private async Task SortSingleCurrencyPair()
+        var ratioDifference = Math.Abs(VolumeToBalanceRatio1 - VolumeToBalanceRatio2);
 
+        return ratioDifference < VolumeToBalanceTolerance;
+    }
 }
