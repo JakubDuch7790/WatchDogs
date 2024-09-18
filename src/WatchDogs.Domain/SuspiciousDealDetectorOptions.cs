@@ -11,7 +11,7 @@ namespace WatchDogs.Domain;
 /// Here we are storing them because we need them in calculating volume-to-balance ratio.
 /// Because this app should be scaleable we provide all standardized lot types in financial markets, particularly in forex trading
 /// </summary>
-public record SuspiciousDealsDetectorOptions
+public record SuspiciousDealDetectorOptions
 {
     public int StandardLot { get; set; }
     public int MiniLot { get; set; }

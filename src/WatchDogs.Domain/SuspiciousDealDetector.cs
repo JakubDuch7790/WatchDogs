@@ -1,9 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WatchDogs.Contracts;
 
 namespace WatchDogs.Domain;
@@ -11,13 +7,14 @@ namespace WatchDogs.Domain;
 public class SuspiciousDealDetector : ISuspiciousDealDetector
 {
     private readonly IDataLoader _dataLoader;
-    private readonly SuspiciousDealsDetectorOptions _options;
+    private readonly SuspiciousDealDetectorOptions _suspiciousDealDetectorOptions;
+
     //private List<ICurrencyBucket> _currencyBuckets = new List<ICurrencyBucket>();
     public ConcurrentDictionary<string, ICurrencyBucket> _currencyTradesPairs = new ConcurrentDictionary<string, ICurrencyBucket>();
-    public SuspiciousDealDetector(IDataLoader dataLoader, SuspiciousDealsDetectorOptions options)
+    public SuspiciousDealDetector(IDataLoader dataLoader, IOptions<SuspiciousDealDetectorOptions> options)
     {
         _dataLoader = dataLoader;
-        _options = options;
+        _suspiciousDealDetectorOptions = options.Value;
     }
 
     public async Task<List<Trade>> LoadDealsAsync()
@@ -30,6 +27,8 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
         foreach (var trade in trades)
         {
+            var HeilHilter = VolumeToBalanceRatioCalculator(trade);
+
             if(!_currencyTradesPairs.ContainsKey(trade.Currency))
             {
                 _currencyTradesPairs.TryAdd(trade.Currency, new CurrencyBucket(trade.Currency));
@@ -72,7 +71,7 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     // Let's first find out if we can calculate that Volume-to-Balance ratio thing
     private decimal VolumeToBalanceRatioCalculator(Trade trade)
     {
-        return (trade.Lot * _options.NanoLot) / trade.AccountBalance;
+        return (trade.Lot * _suspiciousDealDetectorOptions.NanoLot) / trade.AccountBalance;
     }
 
     //private async Task SortSingleCurrencyPair()

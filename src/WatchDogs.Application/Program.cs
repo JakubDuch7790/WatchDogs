@@ -48,8 +48,8 @@ try
     builder.Services.Configure<FakeTradegeneratorOptions>(
         builder.Configuration.GetSection(nameof(FakeTradegeneratorOptions)));
 
-    builder.Services.Configure<SuspiciousDealsDetectorOptions>(
-        builder.Configuration.GetSection(nameof(SuspiciousDealsDetectorOptions)));
+    builder.Services.Configure<SuspiciousDealDetectorOptions>(
+        builder.Configuration.GetSection(nameof(SuspiciousDealDetectorOptions)));
 
     //Other stuff
     builder.Services.AddControllers();
