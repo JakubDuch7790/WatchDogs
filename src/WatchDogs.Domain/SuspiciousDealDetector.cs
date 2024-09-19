@@ -7,6 +7,7 @@ namespace WatchDogs.Domain;
 public class SuspiciousDealDetector : ISuspiciousDealDetector
 {
     private const decimal VolumeToBalanceTolerance = 0.05M;
+    private static readonly TimeSpan TimeDifferTolerance = TimeSpan.FromSeconds(1);
     private readonly IDataLoader _dataLoader;
     private readonly SuspiciousDealDetectorOptions _suspiciousDealDetectorOptions;
 
@@ -27,7 +28,7 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         //var trades = await LoadDealsAsync();
 
         var shmulRosenzweig = GroupTradesByTimestamp(trades);
-        var wulfsschanze = GroupTradesByTimestamps(trades, TimeSpan.FromSeconds(1));
+        var wulfsschanze = GroupTradesByTimestamps(trades, /*TimeSpan.FromSeconds(1)*/SuspiciousDealDetector.TimeDifferTolerance);
         //var reichskanzlei;
 
         foreach (var trade in trades)
