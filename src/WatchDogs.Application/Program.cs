@@ -94,11 +94,14 @@ try
     {
         var services = serviceScope.ServiceProvider;
 
-        var SSD = services.GetRequiredService<ISuspiciousDealDetector>();
+        var SDD = services.GetRequiredService<ISuspiciousDealDetector>();
 
-        var loadedTrades = await SSD.LoadDealsAsync();
+        var loadedTrades = await SDD.LoadDealsAsync();
 
-        await SSD.SortTradesByCurrencyPairsAsync(loadedTrades);
+        //await SDD.SortTradesByCurrencyPairsAsync(loadedTrades);
+
+        await SDD.DetectSuspiciousDealsAsync(loadedTrades);
+
 
     }
 

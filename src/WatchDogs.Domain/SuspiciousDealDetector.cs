@@ -23,17 +23,21 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     {
         return await _dataLoader.LoadAllTradesAsync();
     }
+    //public List<List<Trade>> GetAllCurrencyBucketDeals()
+    //{
+    //    return _currencyTradesPairs;
+    //}
     public async Task SortTradesByCurrencyPairsAsync(List<Trade> trades)
     {
         //var trades = await LoadDealsAsync();
 
-        var shmulRosenzweig = GroupTradesByTimestamp(trades);
-        var wulfsschanze = GroupTradesByTimestamps(trades, /*TimeSpan.FromSeconds(1)*/SuspiciousDealDetector.TimeDifferTolerance);
+        //var shmulRosenzweig = GroupTradesByTimestamp(trades);
+        //var wulfsschanze = GroupTradesByTimestampWithTimeTolerance(trades, /*TimeSpan.FromSeconds(1)*/SuspiciousDealDetector.TimeDifferTolerance);
         //var reichskanzlei;
 
         foreach (var trade in trades)
         {
-            var HeilHilter = VolumeToBalanceRatioCalculator(trade);
+            //var HeilHilter = VolumeToBalanceRatioCalculator(trade);
 
             if(!_currencyTradesPairs.ContainsKey(trade.Currency))
             {
@@ -47,18 +51,34 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
                 _currencyTradesPairs[trade.Currency].Trades.Add(trade);
 
                 //trade.IsProccessed = true;
-
+                
             }
         }
-        var ss = DetectSuspiciousDeals();
+        //var ss = DetectSuspiciousDeals();
     }
-    public async Task<List<Trade>> DetectSuspiciousDeals()
+    public async Task<List<Trade>> DetectSuspiciousDealsAsync(List<Trade> trades)
     {
-        var SS = new List<Trade>();
+        List<List<Trade>> DealsAlreadyFilteredByCurrencyPairAndTimeStamp = new();
+
+        var dajpokoj = new List<Trade>();
+
+        await SortTradesByCurrencyPairsAsync(trades);
+
+        var DealsInBuckets = _currencyTradesPairs.Values;
+
+        foreach (var deal in DealsInBuckets)
+        {
+            var tradesFromOneBucket = deal.Trades;
+
+            var propaganda = GroupTradesByTimestampWithTimeTolerance(tradesFromOneBucket, SuspiciousDealDetector.TimeDifferTolerance);
+
+            DealsAlreadyFilteredByCurrencyPairAndTimeStamp.AddRange(propaganda);
+        }
 
 
 
-        foreach(var currencyPair in _currencyTradesPairs.Values)
+
+        foreach (var currencyPair in _currencyTradesPairs.Values)
         {
             for (int i = 0; i < currencyPair.Trades.Count; i++)
             {
@@ -69,9 +89,9 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
             }
 
                 var temp = currencyPair.Trades.OrderBy(trade => trade.TimeStamp).ToList();/*.Where(group => group.Count() > 1).ToList();*/
-            //SS.Add(temp);
+            //DealsAlreadyFilteredByCurrencyPairAndTimeStamp.Add(temp);
         }
-        return SS;
+        return dajpokoj;
     }
 
     // Let's first find out if we can calculate that Volume-to-Balance ratio thing
@@ -90,30 +110,22 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     }
     // It seems that YES WE CAN. Yet we have to find a place for it's usage.
 
-    // Let's try order trades by Timestamp first then we add 1 sec tolerance
-
-    private List<List<Trade>> GroupTradesByTimestamp(List<Trade> trades)
+    // Beware of IEnumerable
+    private IEnumerable<List<Trade>> GroupTradesByTimestampWithTimeTolerance(List<Trade> trades, TimeSpan tolerance)
     {
-        return trades.GroupBy(trade => trade.TimeStamp)
-            .Select(group => group.ToList())
-            .ToList();
-    }
+        IEnumerable<List<Trade>> DealsAfterFilteringWithMoreThanOneDealInIt = new List<List<Trade>>();
 
-    // Now we add this 1 sec tolerance because now it's shit.
-    private List<List<Trade>> GroupTradesByTimestampWithTimeTolerance(List<Trade> trades, TimeSpan timeToleranceInSeconds)
-    {
-        return trades.GroupBy(trade => trade.TimeStamp)
-            .Select(group => group.ToList())
-            .ToList();
-    }
-
-    private IEnumerable<List<Trade>> GroupTradesByTimestamps(List<Trade> trades, TimeSpan tolerance)
-    {
-        // Sort trades by timestamp first
+        // 1. Step : Sorting trades by timestamp first to get chronological order
         trades = trades.OrderBy(trade => trade.TimeStamp).ToList();
+
+        /* Variable groupedTrades contains List of Trades with more than one deal fulfilling criteria,
+         * i.e. number of suspicious trades exceeds 1.
+         currentGroup is self explanatory*/
 
         var groupedTrades = new List<List<Trade>>();
         var currentGroup = new List<Trade>();
+
+        // 2. Step : Iteration over collection of trades
 
         foreach (var trade in trades)
         {
@@ -123,28 +135,52 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
             }
             else
             {
+                // Setting last deal for comparison
                 var lastTrade = currentGroup.Last();
+
+                /* Checking time differ criteria
+                 * In case of similiar time, add deal to the currentGroup for futher computing */
+
                 var timeDifference = trade.TimeStamp - lastTrade.TimeStamp;
 
-                // Let's hope this shit works
+                // Comparing against tolerance
                 if (timeDifference.Duration() <= tolerance)
                 {
                     currentGroup.Add(trade);
                 }
                 else
                 {
+                    /* In this step the time differ vary so we are proceeding further and begin new iteration*/
                     groupedTrades.Add(currentGroup);
                     currentGroup = new List<Trade> { trade };
                 }
             }
         }
 
-        // Ending
+        // 3. Step : Saving last currentGroup
         if (currentGroup.Count > 0)
         {
             groupedTrades.Add(currentGroup);
         }
-        // Hmmmm
-        return groupedTrades.Where(group => group.Count > 1);
+        // 4. Step : Filtering for groups with more than one trade inside
+        DealsAfterFilteringWithMoreThanOneDealInIt = groupedTrades.Where(group => group.Count > 1);
+        return DealsAfterFilteringWithMoreThanOneDealInIt;
+
+        // Conclusion : Functions seems to work fine. I will procceed with this implementation
+    }
+
+    private void BuySellFilter(List<Trade> trades)
+    {
+        List<Trade> filteredTradesWithActionBuy = new List<Trade>();
+        List<Trade> filteredTradesWithActionSell = new List<Trade>();
+
+        foreach (var trade in trades)
+        {
+            if(trade.Action == TradeAction.Buy)
+            {
+                filteredTradesWithActionBuy.Add(trade);
+            }
+            filteredTradesWithActionSell.Add(trade);
+        }
     }
 }
