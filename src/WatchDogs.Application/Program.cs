@@ -78,6 +78,9 @@ try
     builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
+    //Logger testing
+    builder.Services.AddSingleton(Log.Logger);
+
     //Custom Services
     builder.Services.AddTransient<IWatcher, FakeSourceWatcher>();
     builder.Services.AddTransient<ISuspiciousDealDetector, SuspiciousDealDetector>();
