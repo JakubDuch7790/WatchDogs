@@ -9,5 +9,5 @@ public interface ISuspiciousDealDetector
 {
     Task<List<Trade>> LoadDealsAsync();
     Task SortTradesByCurrencyPairsAsync(List<Trade> trades);
-    Task<List<Trade>> DetectSuspiciousDealsAsync(List<Trade> trades);
+    Task<List<List<Trade>>> DetectSuspiciousDealsAsync(List<Trade> trades);
 }

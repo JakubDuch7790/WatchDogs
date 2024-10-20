@@ -15,38 +15,25 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     private readonly SuspiciousDealDetectorOptions _suspiciousDealDetectorOptions;
     private readonly ILogger _logger;
 
-
-
-    //private List<ICurrencyBucket> _currencyBuckets = new List<ICurrencyBucket>();
     public ConcurrentDictionary<string, ICurrencyBucket> _currencyTradesPairs = new ConcurrentDictionary<string, ICurrencyBucket>();
     public SuspiciousDealDetector(IDataLoader dataLoader, IOptions<SuspiciousDealDetectorOptions> options, ILogger logger)
     {
         _dataLoader = dataLoader;
         _suspiciousDealDetectorOptions = options.Value;
         _logger = logger;
-        
     }
 
     public async Task<List<Trade>> LoadDealsAsync()
     {
         return await _dataLoader.LoadAllTradesAsync();
     }
-    //public List<List<Trade>> GetAllCurrencyBucketDeals()
-    //{
-    //    return _currencyTradesPairs;
-    //}
+
     public async Task SortTradesByCurrencyPairsAsync(List<Trade> trades)
     {
         //var trades = await LoadDealsAsync();
 
-        //var shmulRosenzweig = GroupTradesByTimestamp(trades);
-        //var wulfsschanze = GroupTradesByTimestampWithTimeTolerance(trades, /*TimeSpan.FromSeconds(1)*/SuspiciousDealDetector.TimeDifferTolerance);
-        //var reichskanzlei;
-
         foreach (var trade in trades)
         {
-            //var HeilHilter = VolumeToBalanceRatioCalculator(trade);
-
             if(!_currencyTradesPairs.ContainsKey(trade.Currency))
             {
                 _currencyTradesPairs.TryAdd(trade.Currency, new CurrencyBucket(trade.Currency));
@@ -62,44 +49,32 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
                 
             }
         }
-        //var ss = DetectSuspiciousDeals();
     }
-    public async Task<List<Trade>> DetectSuspiciousDealsAsync(List<Trade> trades)
+    
+    public async Task<List<List<Trade>>> DetectSuspiciousDealsAsync(List<Trade> trades)
     {
-        List<List<Trade>> DealsAlreadyFilteredByCurrencyPairAndTimeStamp = new();
-
-        var dajpokoj = new List<Trade>();
+        List<List<Trade>> dealsAlreadyFilteredByCurrencyPairAndTimeStamp = new();
 
         await SortTradesByCurrencyPairsAsync(trades);
 
-        var DealsInBuckets = _currencyTradesPairs.Values;
+        var dealsInBuckets = _currencyTradesPairs.Values;
 
-        foreach (var deal in DealsInBuckets)
+        foreach (var deals in dealsInBuckets)
         {
-            var tradesFromOneBucket = deal.Trades;
+            var tradesFromOneBucket = deals.Trades;
 
-            var propaganda = GroupTradesByTimestampWithTimeTolerance(tradesFromOneBucket, SuspiciousDealDetector.TimeDifferTolerance);
+            var filteredGroups = GroupTradesByTimestampWithTimeTolerance(tradesFromOneBucket, SuspiciousDealDetector.TimeDifferTolerance);
 
-            DealsAlreadyFilteredByCurrencyPairAndTimeStamp.AddRange(propaganda);
+            dealsAlreadyFilteredByCurrencyPairAndTimeStamp.AddRange(filteredGroups);
+
         }
 
-
-
-
-        foreach (var currencyPair in _currencyTradesPairs.Values)
+        if(dealsAlreadyFilteredByCurrencyPairAndTimeStamp.Count > 0)
         {
-            for (int i = 0; i < currencyPair.Trades.Count; i++)
-            {
-                if (currencyPair.Trades[i].TimeStamp == currencyPair.Trades[i + 1].TimeStamp)
-                {
-
-                }
-            }
-
-                var temp = currencyPair.Trades.OrderBy(trade => trade.TimeStamp).ToList();/*.Where(group => group.Count() > 1).ToList();*/
-            //DealsAlreadyFilteredByCurrencyPairAndTimeStamp.Add(temp);
+            TradeActionFilter(dealsAlreadyFilteredByCurrencyPairAndTimeStamp);
         }
-        return dajpokoj;
+
+        return dealsAlreadyFilteredByCurrencyPairAndTimeStamp;
     }
 
     // Let's first find out if we can calculate that Volume-to-Balance ratio thing
@@ -178,18 +153,36 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         // Conclusion : Functions seems to work fine. I will procceed with this implementation
     }
 
-    private void BuySellFilter(List<Trade> trades)
+    //There are two versions provided because IDK which one will be implemented further
+    private List<List<Trade>> TradeActionFilter(List<List<Trade>> trades)
     {
-        List<Trade> filteredTradesWithActionBuy = new List<Trade>();
-        List<Trade> filteredTradesWithActionSell = new List<Trade>();
+        var tradesToRemove = new List<List<Trade>>();
 
-        foreach (var trade in trades)
+        foreach (var potentialSuspiciousTrades in trades)
         {
-            if(trade.Action == TradeAction.Buy)
+            var ActionToCheck = potentialSuspiciousTrades.First().Action;
+
+            if (potentialSuspiciousTrades.Any(trade => trade.Action != ActionToCheck))
             {
-                filteredTradesWithActionBuy.Add(trade);
+                tradesToRemove.Add(potentialSuspiciousTrades);
             }
-            filteredTradesWithActionSell.Add(trade);
         }
+
+        foreach (var trade in tradesToRemove)
+        {
+            trades.Remove(trade);
+        }
+        return trades;
+    }
+    private bool AreAllTradesOfSameActionVersion2(List<Trade> trades)
+    {
+        var ActionToCheck = trades.First().Action;
+
+        if (trades.Any(trade => trade.Action != ActionToCheck))
+        {
+            return false;
+        }
+
+        return true;
     }
 }
