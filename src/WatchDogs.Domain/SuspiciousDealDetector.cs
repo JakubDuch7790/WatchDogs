@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Serilog;
 using System.Collections.Concurrent;
 using WatchDogs.Contracts;
@@ -59,9 +58,12 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
         var dealsInBuckets = _currencyTradesPairs.Values;
 
-        foreach (var deals in dealsInBuckets)
+        Log.Information($"Filtering trades into currency buckets. \n" +
+            $"{dealsInBuckets.Count} buckets found.");
+
+        foreach (var bucket in dealsInBuckets)
         {
-            var tradesFromOneBucket = deals.Trades;
+            var tradesFromOneBucket = bucket.Trades;
 
             var filteredGroups = GroupTradesByTimestampWithTimeTolerance(tradesFromOneBucket, SuspiciousDealDetector.TimeDifferTolerance);
 
@@ -69,12 +71,44 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
         }
 
+        Log.Information($"Filtering by Timestamp. " +
+            $"{dealsAlreadyFilteredByCurrencyPairAndTimeStamp.Count} buckets remains. {TradesTotalNumber(dealsAlreadyFilteredByCurrencyPairAndTimeStamp)} trades total. \n");
+
         if(dealsAlreadyFilteredByCurrencyPairAndTimeStamp.Count > 0)
         {
-            TradeActionFilter(dealsAlreadyFilteredByCurrencyPairAndTimeStamp);
+            var dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction = TradeActionFilter(dealsAlreadyFilteredByCurrencyPairAndTimeStamp);
+
+            Log.Information($"Filtering by Action. {TradesTotalNumber(dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction)} trades total");
+
+            foreach(var deals in dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction)
+            {
+                var finalFilter = differenceInVolumeToBalanceRatioFilter(deals);
+            }
+
+            Log.Information($"Final filtering by Volume to balance ratio. {TradesTotalNumber(dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction)} trades total");
+
+            dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction.RemoveAll(list => !list.Any());
+
+            SuspiciousDealsLogVisulizer(dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction);
+
+            return dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction;
+
         }
 
+
         return dealsAlreadyFilteredByCurrencyPairAndTimeStamp;
+    }
+
+    private void SuspiciousDealsLogVisulizer(List<List<Trade>> tradesInLists)
+    {
+
+        foreach(var list in tradesInLists)
+        {
+            string tradesDetails = string.Join(", ", list.Select(trade => trade.ToString()));
+
+            Log.Information($"Suspicious trades detected:\n {tradesDetails}");
+            //Log.Information($"Suspicious trades Detected {list.SelectMany(x => x.ToString())}");
+        }
     }
 
     // Let's first find out if we can calculate that Volume-to-Balance ratio thing
@@ -91,6 +125,42 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
         return ratioDifference < VolumeToBalanceTolerance;
     }
+
+    // Filter for the difference in volume-to-balance ratio
+    private List<Trade> differenceInVolumeToBalanceRatioFilter(List<Trade> trades)
+    {
+        List<Trade> tradesToRemove = new List<Trade>();
+
+        for (int i = 0; i < trades.Count; i++)
+        {
+            for (int j = i + 1; j < trades.Count; j++)
+            {
+                var VolumeToBalanceRatio1 = VolumeToBalanceRatioCalculator(trades[i]);
+                var VolumeToBalanceRatio2 = VolumeToBalanceRatioCalculator(trades[j]);
+
+                var ratioDifference = Math.Abs(VolumeToBalanceRatio1 - VolumeToBalanceRatio2);
+
+                if (ratioDifference >= VolumeToBalanceTolerance)
+                {
+                    tradesToRemove.Add(trades[i]);
+                }
+            }
+        }
+
+        foreach (var trade in tradesToRemove)
+        {
+            trades.Remove(trade);
+        }
+
+        if(trades.Count == 1)
+        {
+            trades.Clear();
+        }
+        return trades;
+    }
+
+
+
     // It seems that YES WE CAN. Yet we have to find a place for it's usage.
 
     // Beware of IEnumerable
@@ -185,4 +255,19 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
         return true;
     }
+
+    private int TradesTotalNumber(IEnumerable<List<Trade>> trades)
+    {
+        int tradesTotal = 0;
+
+        foreach(var list in trades)
+        {
+            foreach (var trade in list)
+            {
+                tradesTotal++;
+            }
+        }
+        return tradesTotal;
+    }
+
 }
