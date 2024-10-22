@@ -45,7 +45,6 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
             var filteredGroups = GroupTradesByTimestampWithTimeTolerance(tradesFromOneBucket, SuspiciousDealDetector.TimeDifferTolerance);
 
             dealsAlreadyFilteredByCurrencyPairAndTimeStamp.AddRange(filteredGroups);
-
         }
 
         Log.Information($"Filtering by Timestamp. " +
@@ -139,7 +138,6 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
                 if (timeDifference.Duration() <= tolerance)
                 {
                     currentGroup.Add(trade);
-                    _logger.Information("Trades with similiar time differ detected!");
                 }
                 else
                 {
