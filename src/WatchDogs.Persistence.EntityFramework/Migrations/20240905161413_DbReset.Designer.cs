@@ -12,8 +12,8 @@ using WatchDogs.Persistence.EntityFramework;
 namespace WatchDogs.Persistence.EntityFramework.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240816114731_SS")]
-    partial class SS
+    [Migration("20240905161413_DbReset")]
+    partial class DbReset
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

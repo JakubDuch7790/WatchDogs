@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bogus;
+﻿using Bogus;
 using Microsoft.Extensions.Options;
 using WatchDogs.Contracts;
 
@@ -48,13 +43,13 @@ public class FakeTradeGenerator : IFakeTradeGenerator
             })
             .RuleFor(u => u.Action, f => f.PickRandom<TradeAction>())
             .RuleFor(u => u.Lot, f => Math.Round(f.Random.Decimal(), 2))
-            .RuleFor(u => u.AccountBalance, f => Math.Round(f.Finance.Random.Decimal(1, 10000), 2)
+            .RuleFor(u => u.AccountBalance, f => Math.Round(f.Finance.Random.Decimal(5000, 25000), 2)
             );
     }
 
     public IEnumerable<Trade> LoadFakeData()
     {
-        List<Trade> fakeDealsList = new List<Trade>();
+        List<Trade> fakeDealsList = new();
 
         var fakeTrades = tradeModelFake.GenerateForever().Take(_random.Next(_fakeTradegeneratorOptions.GeneratedTradesBottom, _fakeTradegeneratorOptions.GeneratedTradesTop));
 

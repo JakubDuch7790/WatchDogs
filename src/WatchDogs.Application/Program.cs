@@ -8,7 +8,9 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http.Headers;
+using WatchDogs.Application;
 using WatchDogs.Contracts;
+using WatchDogs.Domain;
 using WatchDogs.Infrastructure.FakeSource;
 using WatchDogs.Persistence.EntityFramework;
 
@@ -33,7 +35,7 @@ try
     // Add services to the container.
 
     //Database
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 
     //Config options
@@ -46,12 +48,16 @@ try
     builder.Services.Configure<FakeTradegeneratorOptions>(
         builder.Configuration.GetSection(nameof(FakeTradegeneratorOptions)));
 
+    builder.Services.Configure<SuspiciousDealDetectorOptions>(
+        builder.Configuration.GetSection(nameof(SuspiciousDealDetectorOptions)));
+
     //Other stuff
     builder.Services.AddControllers();
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    //DxTrade platform related stuff
     builder.Services.AddHttpClient(DxTradeConstants.DxTradeAuthenticationClient, client => {
         client.BaseAddress = new Uri("https://dxtrade.ftmo.com/api/auth/");
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
@@ -59,27 +65,31 @@ try
         client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(new ProductHeaderValue("User-Agent")));
     });
-
     builder.Services.AddSingleton<IDxTradeAuthenticator, DxTradeAuthenticator>();
     builder.Services.AddSingleton<ISessionTokenStorage, InMemorySessionTokenStorage>();
-
     builder.Services.AddSingleton<DxTradeClient>();
-    builder.Services.AddTransient<IDataInserter, DataInserter>();
+
+    //Services that query the Db
+    //builder.Services.AddTransient<IDataInserter, DataInserter>();
+    builder.Services.AddTransient<IDataLoader, DataLoader>();
+
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
 
     builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-    builder.Services.AddTransient(serviceProvider =>
-    {
-        var options = serviceProvider.GetRequiredService<IOptions<FakeSourceOptions>>();
-        var loger = serviceProvider.GetRequiredService<ILogger<FakeSourceWatcher>>();
-        var dataGenerator = serviceProvider.GetRequiredService<IFakeTradeGenerator>();
-        var dataInserter = serviceProvider.GetRequiredService<IDataInserter>();
-        return new FakeSourceWatcher(dataGenerator, dataInserter, loger, options);
-    });
-    
+    //Logger testing
+    builder.Services.AddSingleton(Log.Logger);
 
+    //Custom Services
+    builder.Services.AddTransient<IWatcher, FakeSourceWatcher>();
+    builder.Services.AddTransient<ISuspiciousDealDetector, SuspiciousDealDetector>();
+
+    builder.Services.AddScoped<IUnitOfWork, EntityFrameworkUnitOfWork>();
+    builder.Services.AddScoped<IDataInserter, DataInserter>();
+
+
+    builder.Services.AddHostedService<WatcherBackgroundService>();
 
     var app = builder.Build();
 
@@ -87,18 +97,13 @@ try
     {
         var services = serviceScope.ServiceProvider;
 
-        var bogusDataGenerator = services.GetRequiredService<FakeSourceWatcher>();
+        var SDD = services.GetRequiredService<ISuspiciousDealDetector>();
 
-        await bogusDataGenerator.StartAsync();
+        var loadedTrades = await SDD.LoadDealsAsync();
 
-        var dxTradeAuthenticator = services.GetRequiredService<IDxTradeAuthenticator>();
-
-        await dxTradeAuthenticator.AuthenticateAsync();
-
-        var dxTradeClient = services.GetRequiredService<DxTradeClient>();
-
-        await dxTradeClient.EstablishWebSocketConnectionAsync(dxTradeAuthenticator.AuthenticateAsync().Result);
+        await SDD.DetectSuspiciousDealsAsync(loadedTrades);
     }
+
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())

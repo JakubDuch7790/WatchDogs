@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WatchDogs.Contracts\WatchDogs.Contracts.csproj" />
+    <ProjectReference Include="..\WatchDogs.Domain\WatchDogs.Domain.csproj" />
     <ProjectReference Include="..\WatchDogs.Infrastructure.DxTrade\WatchDogs.Infrastructure.DxTrade.csproj" />
     <ProjectReference Include="..\WatchDogs.Infrastructure.FakeSource\WatchDogs.Infrastructure.FakeSource.csproj" />
     <ProjectReference Include="..\WatchDogs.Persistence.EntityFramework\WatchDogs.Persistence.EntityFramework.csproj" />

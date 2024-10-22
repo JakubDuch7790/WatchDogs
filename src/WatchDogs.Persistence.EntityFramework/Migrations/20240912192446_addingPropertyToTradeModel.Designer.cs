@@ -12,8 +12,8 @@ using WatchDogs.Persistence.EntityFramework;
 namespace WatchDogs.Persistence.EntityFramework.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240816114239_AddTradesTable")]
-    partial class AddTradesTable
+    [Migration("20240912192446_addingPropertyToTradeModel")]
+    partial class addingPropertyToTradeModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,6 +40,9 @@ namespace WatchDogs.Persistence.EntityFramework.Migrations
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsProccessed")
+                        .HasColumnType("bit");
 
                     b.Property<decimal>("Lot")
                         .HasColumnType("decimal(18,2)");
