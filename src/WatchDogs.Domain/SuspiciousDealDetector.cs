@@ -27,29 +27,6 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         return await _dataLoader.LoadAllTradesAsync();
     }
 
-    public async Task SortTradesByCurrencyPairsAsync(List<Trade> trades)
-    {
-        //var trades = await LoadDealsAsync();
-
-        foreach (var trade in trades)
-        {
-            if(!_currencyTradesPairs.ContainsKey(trade.Currency))
-            {
-                _currencyTradesPairs.TryAdd(trade.Currency, new CurrencyBucket(trade.Currency));
-                _currencyTradesPairs[trade.Currency].Trades.Add(trade);
-
-                //trade.IsProccessed = true;
-            }
-            else
-            {
-                _currencyTradesPairs[trade.Currency].Trades.Add(trade);
-
-                //trade.IsProccessed = true;
-                
-            }
-        }
-    }
-    
     public async Task<List<List<Trade>>> DetectSuspiciousDealsAsync(List<Trade> trades)
     {
         List<List<Trade>> dealsAlreadyFilteredByCurrencyPairAndTimeStamp = new();
@@ -95,73 +72,35 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
         }
 
-
         return dealsAlreadyFilteredByCurrencyPairAndTimeStamp;
     }
 
-    private void SuspiciousDealsLogVisulizer(List<List<Trade>> tradesInLists)
+    #region Currency Bucket Sort
+    public async Task SortTradesByCurrencyPairsAsync(List<Trade> trades)
     {
 
-        foreach(var list in tradesInLists)
+        foreach (var trade in trades)
         {
-            string tradesDetails = string.Join(", ", list.Select(trade => trade.ToString()));
-
-            Log.Information($"Suspicious trades detected:\n {tradesDetails}");
-            //Log.Information($"Suspicious trades Detected {list.SelectMany(x => x.ToString())}");
-        }
-    }
-
-    // Let's first find out if we can calculate that Volume-to-Balance ratio thing
-    private decimal VolumeToBalanceRatioCalculator(Trade trade)
-    {
-        return (trade.Lot * _suspiciousDealDetectorOptions.MicroLot) / trade.AccountBalance;
-    }
-    private bool HasAcceptableVolumeToBalanceDifference(Trade trade1, Trade trade2)
-    {
-        var VolumeToBalanceRatio1 = VolumeToBalanceRatioCalculator(trade1);
-        var VolumeToBalanceRatio2 = VolumeToBalanceRatioCalculator(trade2);
-
-        var ratioDifference = Math.Abs(VolumeToBalanceRatio1 - VolumeToBalanceRatio2);
-
-        return ratioDifference < VolumeToBalanceTolerance;
-    }
-
-    // Filter for the difference in volume-to-balance ratio
-    private List<Trade> differenceInVolumeToBalanceRatioFilter(List<Trade> trades)
-    {
-        List<Trade> tradesToRemove = new List<Trade>();
-
-        for (int i = 0; i < trades.Count; i++)
-        {
-            for (int j = i + 1; j < trades.Count; j++)
+            if (!_currencyTradesPairs.ContainsKey(trade.Currency))
             {
-                var VolumeToBalanceRatio1 = VolumeToBalanceRatioCalculator(trades[i]);
-                var VolumeToBalanceRatio2 = VolumeToBalanceRatioCalculator(trades[j]);
+                _currencyTradesPairs.TryAdd(trade.Currency, new CurrencyBucket(trade.Currency));
+                _currencyTradesPairs[trade.Currency].Trades.Add(trade);
 
-                var ratioDifference = Math.Abs(VolumeToBalanceRatio1 - VolumeToBalanceRatio2);
+                //trade.IsProccessed = true;
+            }
+            else
+            {
+                _currencyTradesPairs[trade.Currency].Trades.Add(trade);
 
-                if (ratioDifference >= VolumeToBalanceTolerance)
-                {
-                    tradesToRemove.Add(trades[i]);
-                }
+                //trade.IsProccessed = true;
+
             }
         }
-
-        foreach (var trade in tradesToRemove)
-        {
-            trades.Remove(trade);
-        }
-
-        if(trades.Count == 1)
-        {
-            trades.Clear();
-        }
-        return trades;
     }
 
+    #endregion
 
-
-    // It seems that YES WE CAN. Yet we have to find a place for it's usage.
+    #region Timestamp filter
 
     // Beware of IEnumerable
     private IEnumerable<List<Trade>> GroupTradesByTimestampWithTimeTolerance(List<Trade> trades, TimeSpan tolerance)
@@ -223,6 +162,10 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         // Conclusion : Functions seems to work fine. I will procceed with this implementation
     }
 
+    #endregion
+
+    #region Buy/Sell Filter
+
     //There are two versions provided because IDK which one will be implemented further
     private List<List<Trade>> TradeActionFilter(List<List<Trade>> trades)
     {
@@ -256,11 +199,64 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         return true;
     }
 
+    #endregion
+
+    #region Volume To Balance Ratio Filter
+    private decimal VolumeToBalanceRatioCalculator(Trade trade)
+    {
+        return (trade.Lot * _suspiciousDealDetectorOptions.MicroLot) / trade.AccountBalance;
+    }
+    private bool HasAcceptableVolumeToBalanceDifference(Trade trade1, Trade trade2)
+    {
+        var VolumeToBalanceRatio1 = VolumeToBalanceRatioCalculator(trade1);
+        var VolumeToBalanceRatio2 = VolumeToBalanceRatioCalculator(trade2);
+
+        var ratioDifference = Math.Abs(VolumeToBalanceRatio1 - VolumeToBalanceRatio2);
+
+        return ratioDifference < VolumeToBalanceTolerance;
+    }
+
+    // Filter for the difference in volume-to-balance ratio
+    private List<Trade> differenceInVolumeToBalanceRatioFilter(List<Trade> trades)
+    {
+        List<Trade> tradesToRemove = new List<Trade>();
+
+        for (int i = 0; i < trades.Count; i++)
+        {
+            for (int j = i + 1; j < trades.Count; j++)
+            {
+                var VolumeToBalanceRatio1 = VolumeToBalanceRatioCalculator(trades[i]);
+                var VolumeToBalanceRatio2 = VolumeToBalanceRatioCalculator(trades[j]);
+
+                var ratioDifference = Math.Abs(VolumeToBalanceRatio1 - VolumeToBalanceRatio2);
+
+                if (ratioDifference >= VolumeToBalanceTolerance)
+                {
+                    tradesToRemove.Add(trades[i]);
+                }
+            }
+        }
+
+        foreach (var trade in tradesToRemove)
+        {
+            trades.Remove(trade);
+        }
+
+        if (trades.Count == 1)
+        {
+            trades.Clear();
+        }
+        return trades;
+    }
+
+    #endregion
+
+    #region Helper Methods
     private int TradesTotalNumber(IEnumerable<List<Trade>> trades)
     {
         int tradesTotal = 0;
 
-        foreach(var list in trades)
+        foreach (var list in trades)
         {
             foreach (var trade in list)
             {
@@ -269,5 +265,17 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         }
         return tradesTotal;
     }
+    private void SuspiciousDealsLogVisulizer(List<List<Trade>> tradesInLists)
+    {
+
+        foreach (var list in tradesInLists)
+        {
+            string tradesDetails = string.Join(", ", list.Select(trade => trade.ToString()));
+
+            Log.Information($"Suspicious trades detected:\n {tradesDetails}");
+        }
+    }
+
+    #endregion
 
 }

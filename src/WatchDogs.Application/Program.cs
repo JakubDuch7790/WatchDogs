@@ -101,11 +101,7 @@ try
 
         var loadedTrades = await SDD.LoadDealsAsync();
 
-        //await SDD.SortTradesByCurrencyPairsAsync(loadedTrades);
-
         await SDD.DetectSuspiciousDealsAsync(loadedTrades);
-
-
     }
 
 
