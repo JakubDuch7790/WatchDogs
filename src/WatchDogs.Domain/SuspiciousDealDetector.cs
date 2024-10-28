@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using Serilog;
 using System.Collections.Concurrent;
 using WatchDogs.Contracts;
 using ILogger = Serilog.ILogger;
@@ -14,7 +13,7 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     private readonly SuspiciousDealDetectorOptions _suspiciousDealDetectorOptions;
     private readonly ILogger _logger;
 
-    public ConcurrentDictionary<string, ICurrencyBucket> _currencyTradesPairs = new ConcurrentDictionary<string, ICurrencyBucket>();
+    public ConcurrentDictionary<string, CurrencyBucket> _currencyTradesPairs = new ConcurrentDictionary<string, CurrencyBucket>();
     public SuspiciousDealDetector(ITradeLoader dataLoader, IOptions<SuspiciousDealDetectorOptions> options, ILogger logger)
     {
         _dataLoader = dataLoader;
