@@ -101,9 +101,9 @@ try
 
         var SDD = services.GetRequiredService<ISuspiciousDealDetector>();
 
-        //var loadedTrades = await SDD.LoadDealsAsync();
+        var loadedTrades = await SDD.LoadDealsAsync();
 
-        //await SDD.DetectSuspiciousDealsAsync(loadedTrades);
+        await SDD.DetectSuspiciousDealsAsync(loadedTrades);
     }
 
 

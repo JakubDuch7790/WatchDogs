@@ -81,11 +81,16 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         {
             if (!_currencyTradesPairs.ContainsKey(trade.Currency))
             {
-                _currencyTradesPairs.TryAdd(trade.Currency, new CurrencyBucket(trade.Currency));
-                _currencyTradesPairs[trade.Currency].Trades.Add(trade);
+                _currencyTradesPairs.AddOrUpdate(trade.Currency, new CurrencyBucket(trade.Currency), (currency, bucket) =>
+                {
+                    bucket.Trades.Add(trade);
 
+                    return bucket;
+                });
+                    
                 //trade.IsProccessed = true;
             }
+
             else
             {
                 _currencyTradesPairs[trade.Currency].Trades.Add(trade);
