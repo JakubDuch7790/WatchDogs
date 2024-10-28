@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WatchDogs.Persistence.EntityFramework.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTradesTable : Migration
+    public partial class DbReset : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

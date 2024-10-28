@@ -14,4 +14,12 @@ public class ApplicationDbContext : DbContext
         
     }
     public DbSet<Trade> Trades { get; set; }
+
+    public IQueryable<Trade> SuspiciousTrades => Trades.Where(trade => trade.IsProccessed);
+
+    //protected override void OnModelCreating(ModelBuilder modelBuilder)
+    //{
+    //    modelBuilder.Entity<Trade>()
+    //        .ToTable("Trades");
+    //}
 }

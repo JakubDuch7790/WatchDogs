@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using WatchDogs.Contracts;
+using WatchDogs.Persistence.EntityFramework;
 
 namespace WatchDogs.Infrastructure.FakeSource;
 
@@ -16,18 +12,22 @@ public class FakeSourceWatcher : IWatcher
     private readonly PeriodicTimer _timer;
     private readonly CancellationTokenSource _cts = new();
     private readonly IFakeTradeGenerator _dataGenerator;
-    private readonly IDataInserter _dataInserter;
     private readonly ILogger<FakeSourceWatcher> _logger;
     private readonly FakeSourceOptions _fakeSourceOptions;
+    private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
+    private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-    public FakeSourceWatcher(IFakeTradeGenerator dataGenerator, IDataInserter dataInserter, ILogger<FakeSourceWatcher> logger, IOptions<FakeSourceOptions> fakeSourceOptions)
+    public FakeSourceWatcher(DbContextOptions<ApplicationDbContext> dbContextOptions,
+        IFakeTradeGenerator dataGenerator, ILogger<FakeSourceWatcher> logger,
+        IOptions<FakeSourceOptions> fakeSourceOptions, IUnitOfWorkFactory unitOfWorkFactory)
     {
         _fakeSourceOptions = fakeSourceOptions.Value;
-
         _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(_fakeSourceOptions.IntervalInMilliseconds));
         _dataGenerator = dataGenerator;
-        _dataInserter = dataInserter;
         _logger = logger;
+        _dbContextOptions = dbContextOptions;
+        _unitOfWorkFactory = unitOfWorkFactory;
+
     }
 
     public async Task StartAsync(CancellationToken token = default)
@@ -56,13 +56,37 @@ public class FakeSourceWatcher : IWatcher
 
     private async Task LoadFakeDataEverySecondAsync()
     {
+        using var unitOfWork = _unitOfWorkFactory.Create();
+
         try
         {
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
+                _logger.LogInformation("Fake data are about to be created.");
+
                 var tradesToInsert = _dataGenerator.LoadFakeData();
 
-                await _dataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
+                _logger.LogInformation("Fake data have been created successfully.");
+
+                _logger.LogInformation("Fake data are about to be inserted into Db.");
+
+                await unitOfWork.DataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
+
+                try
+                {
+                    await unitOfWork.SaveAsync();
+
+                    if (_cts.Token.IsCancellationRequested)
+                    {
+                        _logger.LogInformation("Cancellation requested.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"{ex.Message}");
+                }
+
+                _logger.LogInformation("Fake data have been inserted into Db successfully.");
             }
         }
         catch (OperationCanceledException) 
