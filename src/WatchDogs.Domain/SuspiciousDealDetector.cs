@@ -10,12 +10,12 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 {
     private const decimal VolumeToBalanceTolerance = 0.05M;
     private static readonly TimeSpan TimeDifferTolerance = TimeSpan.FromSeconds(1);
-    private readonly IDataLoader _dataLoader;
+    private readonly ITradeLoader _dataLoader;
     private readonly SuspiciousDealDetectorOptions _suspiciousDealDetectorOptions;
     private readonly ILogger _logger;
 
     public ConcurrentDictionary<string, ICurrencyBucket> _currencyTradesPairs = new ConcurrentDictionary<string, ICurrencyBucket>();
-    public SuspiciousDealDetector(IDataLoader dataLoader, IOptions<SuspiciousDealDetectorOptions> options, ILogger logger)
+    public SuspiciousDealDetector(ITradeLoader dataLoader, IOptions<SuspiciousDealDetectorOptions> options, ILogger logger)
     {
         _dataLoader = dataLoader;
         _suspiciousDealDetectorOptions = options.Value;
@@ -35,7 +35,7 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
         var dealsInBuckets = _currencyTradesPairs.Values;
 
-        Log.Information($"Filtering trades into currency buckets. \n" +
+        _logger.Information($"Filtering trades into currency buckets. \n" +
             $"{dealsInBuckets.Count} buckets found.");
 
         foreach (var bucket in dealsInBuckets)
@@ -47,21 +47,21 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
             dealsAlreadyFilteredByCurrencyPairAndTimeStamp.AddRange(filteredGroups);
         }
 
-        Log.Information($"Filtering by Timestamp. " +
+        _logger.Information($"Filtering by Timestamp. " +
             $"{dealsAlreadyFilteredByCurrencyPairAndTimeStamp.Count} buckets remains. {TradesTotalNumber(dealsAlreadyFilteredByCurrencyPairAndTimeStamp)} trades total. \n");
 
         if(dealsAlreadyFilteredByCurrencyPairAndTimeStamp.Count > 0)
         {
             var dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction = TradeActionFilter(dealsAlreadyFilteredByCurrencyPairAndTimeStamp);
 
-            Log.Information($"Filtering by Action. {TradesTotalNumber(dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction)} trades total");
+            _logger.Information($"Filtering by Action. {TradesTotalNumber(dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction)} trades total");
 
             foreach(var deals in dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction)
             {
                 var finalFilter = differenceInVolumeToBalanceRatioFilter(deals);
             }
 
-            Log.Information($"Final filtering by Volume to balance ratio. {TradesTotalNumber(dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction)} trades total");
+            _logger.Information($"Final filtering by Volume to balance ratio. {TradesTotalNumber(dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction)} trades total");
 
             dealsAlreadyFilteredByCurrencyPairAndTimeStampAndAction.RemoveAll(list => !list.Any());
 
@@ -270,7 +270,7 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         {
             string tradesDetails = string.Join(", ", list.Select(trade => trade.ToString()));
 
-            Log.Information($"Suspicious trades detected:\n {tradesDetails}");
+            _logger.Information($"Suspicious trades detected:\n {tradesDetails}");
         }
     }
 

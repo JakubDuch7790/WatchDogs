@@ -8,11 +8,11 @@ using WatchDogs.Contracts;
 
 namespace WatchDogs.Persistence.EntityFramework;
 
-public class DataLoader : IDataLoader
+public class TradeLoader : ITradeLoader
 {
     private readonly ApplicationDbContext _context;
 
-    public DataLoader(ApplicationDbContext context)
+    public TradeLoader(ApplicationDbContext context)
     {
         _context = context;
     }

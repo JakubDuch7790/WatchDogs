@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,17 +15,19 @@ public class FakeSourceWatcher : IWatcher
     private readonly IFakeTradeGenerator _dataGenerator;
     private readonly ILogger<FakeSourceWatcher> _logger;
     private readonly FakeSourceOptions _fakeSourceOptions;
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
+    private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-    public FakeSourceWatcher(DbContextOptions<ApplicationDbContext> dbContextOptions, IServiceScopeFactory scopeFactory, IFakeTradeGenerator dataGenerator, IDataInserter dataInserter, ILogger<FakeSourceWatcher> logger, IOptions<FakeSourceOptions> fakeSourceOptions)
+    public FakeSourceWatcher(DbContextOptions<ApplicationDbContext> dbContextOptions,
+        IFakeTradeGenerator dataGenerator, ILogger<FakeSourceWatcher> logger,
+        IOptions<FakeSourceOptions> fakeSourceOptions, IUnitOfWorkFactory unitOfWorkFactory)
     {
         _fakeSourceOptions = fakeSourceOptions.Value;
-        _scopeFactory = scopeFactory;
         _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(_fakeSourceOptions.IntervalInMilliseconds));
         _dataGenerator = dataGenerator;
         _logger = logger;
         _dbContextOptions = dbContextOptions;
+        _unitOfWorkFactory = unitOfWorkFactory;
 
     }
 
@@ -61,14 +57,12 @@ public class FakeSourceWatcher : IWatcher
 
     private async Task LoadFakeDataEverySecondAsync()
     {
+        using var unitOfWork = _unitOfWorkFactory.Create();
+
         try
         {
             while (await _timer.WaitForNextTickAsync(_cts.Token))
             {
-                var unitOfWorkFactory = new EntityFrameworkUnitOfWorkFactory(_dbContextOptions);
-
-                var unitOfWork = unitOfWorkFactory.Create();
-
                 _logger.LogInformation("Fake data are about to be created.");
 
                 var tradesToInsert = _dataGenerator.LoadFakeData();

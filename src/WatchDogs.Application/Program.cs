@@ -70,23 +70,25 @@ try
     builder.Services.AddSingleton<DxTradeClient>();
 
     //Services that query the Db
-    //builder.Services.AddTransient<IDataInserter, DataInserter>();
-    builder.Services.AddTransient<IDataLoader, DataLoader>();
+    //builder.Services.AddTransient<ITradeInserter, TradeInserter>();
+    builder.Services.AddTransient<ITradeLoader, TradeLoader>();
 
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
 
     builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-    //Logger testing
+    //Logger
     builder.Services.AddSingleton(Log.Logger);
 
     //Custom Services
+    builder.Services.AddScoped<ITradeInserter, TradeInserter>();
+    builder.Services.AddScoped<IUnitOfWork, EntityFrameworkUnitOfWork>();
+    builder.Services.AddSingleton<IUnitOfWorkFactory, UnitOfWorkFactory>();
+
     builder.Services.AddTransient<IWatcher, FakeSourceWatcher>();
     builder.Services.AddTransient<ISuspiciousDealDetector, SuspiciousDealDetector>();
 
-    builder.Services.AddScoped<IUnitOfWork, EntityFrameworkUnitOfWork>();
-    builder.Services.AddScoped<IDataInserter, DataInserter>();
 
 
     builder.Services.AddHostedService<WatcherBackgroundService>();

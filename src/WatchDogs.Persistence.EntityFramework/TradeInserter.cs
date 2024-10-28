@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WatchDogs.Contracts;
+﻿using WatchDogs.Contracts;
 
 namespace WatchDogs.Persistence.EntityFramework;
 
-public class DataInserter : IDataInserter
+public class TradeInserter : ITradeInserter
 {
     private readonly ApplicationDbContext _context;
 
-    public DataInserter(ApplicationDbContext context)
+    public TradeInserter(ApplicationDbContext context)
     {
         _context = context;
     }

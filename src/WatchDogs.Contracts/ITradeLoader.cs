@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace WatchDogs.Contracts;
-public interface IDataInserter
+public interface ITradeLoader
 {
-    Task InsertTradeDatatoDbAsync(IEnumerable<Trade> data); 
+    Task<List<Trade>> LoadAllTradesAsync();
 }

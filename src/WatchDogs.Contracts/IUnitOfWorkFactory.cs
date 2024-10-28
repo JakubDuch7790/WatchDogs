@@ -1,5 +1,5 @@
 ﻿namespace WatchDogs.Contracts;
-public interface IEntityFrameworkUnitOfWorkFactory
+public interface IUnitOfWorkFactory
 {
     IUnitOfWork Create();
 }
