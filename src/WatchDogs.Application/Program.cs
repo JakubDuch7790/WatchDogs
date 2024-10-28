@@ -1,11 +1,7 @@
 using Contracts;
 using Infrastructure.DxTrade;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http.Headers;
 using WatchDogs.Application;
@@ -88,8 +84,6 @@ try
 
     builder.Services.AddTransient<IWatcher, FakeSourceWatcher>();
     builder.Services.AddTransient<ISuspiciousDealDetector, SuspiciousDealDetector>();
-
-
 
     builder.Services.AddHostedService<WatcherBackgroundService>();
 

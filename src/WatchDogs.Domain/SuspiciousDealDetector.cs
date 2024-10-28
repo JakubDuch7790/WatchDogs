@@ -96,7 +96,6 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
                 _currencyTradesPairs[trade.Currency].Trades.Add(trade);
 
                 //trade.IsProccessed = true;
-
             }
         }
     }
@@ -105,7 +104,6 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
     #region Timestamp filter
 
-    // Beware of IEnumerable
     private IEnumerable<List<Trade>> GroupTradesByTimestampWithTimeTolerance(List<Trade> trades, TimeSpan tolerance)
     {
         IEnumerable<List<Trade>> DealsAfterFilteringWithMoreThanOneDealInIt = new List<List<Trade>>();
@@ -160,8 +158,6 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         // 4. Step : Filtering for groups with more than one trade inside
         DealsAfterFilteringWithMoreThanOneDealInIt = groupedTrades.Where(group => group.Count > 1);
         return DealsAfterFilteringWithMoreThanOneDealInIt;
-
-        // Conclusion : Functions seems to work fine. I will procceed with this implementation
     }
 
     #endregion
