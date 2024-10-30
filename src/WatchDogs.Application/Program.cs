@@ -1,6 +1,7 @@
 using Contracts;
 using Infrastructure.DxTrade;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System.Net.Http.Headers;
@@ -33,6 +34,10 @@ try
     //Database
     builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
+
+    //DbContext specifically for storing SuspiciousTrades as DbSet<Trade> in single Db
+    builder.Services.AddDbContext<SuspiciousTradesDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 
     //Config options
     builder.Services.Configure<DxTradeConnectionOptions>(
