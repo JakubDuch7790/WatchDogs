@@ -5,4 +5,6 @@ public interface ISuspiciousDealDetector
 
     Task<List<Trade>> LoadDealsAsync();
 
+    Task StoreSuspiciousTradesAsync(List<List<Trade>> trades);
+
 }

@@ -83,10 +83,19 @@ try
     builder.Services.AddSingleton(Log.Logger);
 
     //Custom Services
+
+    //Trades loading and inserting into Db
     builder.Services.AddScoped<ITradeInserter, TradeInserter>();
     builder.Services.AddScoped<IUnitOfWork, EntityFrameworkUnitOfWork>();
     builder.Services.AddSingleton<IUnitOfWorkFactory, UnitOfWorkFactory>();
 
+
+    //Suspicious trades inserting into Db
+    builder.Services.AddScoped<ISuspiciousDealInserter, SuspiciousTradesInserter>();
+    //builder.Services.AddScoped<IUnitOfWork, SuspiciousTradesInsertingUnitOfWork>();
+    //builder.Services.AddSingleton<IUnitOfWorkFactory, SuspiciousTradesInsertingUnitOfWorkFactory>();
+
+    //Domain logic services
     builder.Services.AddTransient<IWatcher, FakeSourceWatcher>();
     builder.Services.AddTransient<ISuspiciousDealDetector, SuspiciousDealDetector>();
 
@@ -102,7 +111,9 @@ try
 
         var loadedTrades = await SDD.LoadDealsAsync();
 
-        await SDD.DetectSuspiciousDealsAsync(loadedTrades);
+        var SS = await SDD.DetectSuspiciousDealsAsync(loadedTrades);
+
+        await SDD.StoreSuspiciousTradesAsync(SS);
     }
 
 

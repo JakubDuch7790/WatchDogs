@@ -2,7 +2,7 @@
 using WatchDogs.Contracts;
 
 namespace WatchDogs.Persistence.EntityFramework;
-public class SuspiciousTradesInserter
+public class SuspiciousTradesInserter : ISuspiciousDealInserter
 {
     private readonly SuspiciousTradesDbContext _context;
     private readonly ILogger _logger;
@@ -26,5 +26,8 @@ public class SuspiciousTradesInserter
         }
     }
 
-
+    public async Task SaveAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
 }
