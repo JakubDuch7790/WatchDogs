@@ -35,7 +35,7 @@ try
     builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 
-    //DbContext specifically for storing SuspiciousTrades as DbSet<Trade> in single Db
+    //DbContext specifically for storing SuspiciousTrades
     builder.Services.AddDbContext<SuspiciousTradesDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 
@@ -71,15 +71,16 @@ try
     builder.Services.AddSingleton<DxTradeClient>();
 
     //Services that query the Db
-    //builder.Services.AddTransient<ITradeInserter, TradeInserter>();
+    //builder.Services.AddTransient<ITradeInserter, TradeInserter>(); resolved by factory
     builder.Services.AddTransient<ITradeLoader, TradeLoader>();
 
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
 
+    //Logger
+
     builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-    //Logger
     builder.Services.AddSingleton(Log.Logger);
 
     //Custom Services
@@ -89,11 +90,8 @@ try
     builder.Services.AddScoped<IUnitOfWork, EntityFrameworkUnitOfWork>();
     builder.Services.AddSingleton<IUnitOfWorkFactory, UnitOfWorkFactory>();
 
-
     //Suspicious trades inserting into Db
     builder.Services.AddScoped<ISuspiciousDealInserter, SuspiciousTradesInserter>();
-    //builder.Services.AddScoped<IUnitOfWork, SuspiciousTradesInsertingUnitOfWork>();
-    //builder.Services.AddSingleton<IUnitOfWorkFactory, SuspiciousTradesInsertingUnitOfWorkFactory>();
 
     //Domain logic services
     builder.Services.AddTransient<IWatcher, FakeSourceWatcher>();

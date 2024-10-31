@@ -12,16 +12,14 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     private readonly ITradeLoader _dataLoader;
     private readonly SuspiciousDealDetectorOptions _suspiciousDealDetectorOptions;
     private readonly ILogger _logger;
-    //private readonly IUnitOfWorkFactory _unitOfWorkFactory;
     private readonly ISuspiciousDealInserter _suspiciousDealInserter;
 
     public ConcurrentDictionary<string, CurrencyBucket> _currencyTradesPairs = new ConcurrentDictionary<string, CurrencyBucket>();
-    public SuspiciousDealDetector(ITradeLoader dataLoader, IOptions<SuspiciousDealDetectorOptions> options, ILogger logger/*, IUnitOfWorkFactory unitOfWorkFactory*/, ISuspiciousDealInserter suspiciousDealInserter)
+    public SuspiciousDealDetector(ITradeLoader dataLoader, IOptions<SuspiciousDealDetectorOptions> options, ILogger logger, ISuspiciousDealInserter suspiciousDealInserter)
     {
         _dataLoader = dataLoader;
         _suspiciousDealDetectorOptions = options.Value;
         _logger = logger;
-        //_unitOfWorkFactory = unitOfWorkFactory;
         _suspiciousDealInserter = suspiciousDealInserter;
     }
 
@@ -282,22 +280,18 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
     public async Task StoreSuspiciousTradesAsync(List<List<Trade>> trades)
     {
-        //using var unitOfWork = _unitOfWorkFactory.Create();
-
         List<Trade> tradesToInsert = new List<Trade>();
 
-        foreach (var trade in trades)
+        foreach (var listOfTrades in trades)
         {
-            foreach (var x in trade)
+            foreach (var trade in listOfTrades)
             {
-                tradesToInsert.Add(x);
+                tradesToInsert.Add(trade);
             }
         }
 
         await _suspiciousDealInserter.InsertTradeDatatoDbAsync(tradesToInsert);
         await _suspiciousDealInserter.SaveAsync();
-        //await unitOfWork.DataInserter.InsertTradeDatatoDbAsync(tradesToInsert);
-        //await unitOfWork.SaveAsync();
     }
 
 }

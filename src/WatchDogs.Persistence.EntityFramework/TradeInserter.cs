@@ -20,16 +20,10 @@ public class TradeInserter : ITradeInserter
         {
             await _context.Trades.AddRangeAsync(data);
 
-            //await _context.SaveChangesAsync();
         }
         catch (Exception ex)
         {
             _logger.Error($"{ex.Message}");
         }
-    }
-
-    private async Task AddSingleTrade(Trade trade)
-    {
-        await _context.Trades.AddAsync(trade);
     }
 }

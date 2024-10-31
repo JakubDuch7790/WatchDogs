@@ -22,7 +22,6 @@ public class EntityFrameworkUnitOfWork : IUnitOfWork
         await _context.SaveChangesAsync();
     }
 
-
     public void Dispose()
     {
         _context.Dispose();
