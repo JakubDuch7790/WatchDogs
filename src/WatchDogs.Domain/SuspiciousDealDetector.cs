@@ -290,7 +290,7 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
             }
         }
 
-        await _suspiciousDealInserter.InsertTradeDatatoDbAsync(tradesToInsert);
+        await _suspiciousDealInserter.InsertAsync(tradesToInsert);
         await _suspiciousDealInserter.SaveAsync();
     }
 

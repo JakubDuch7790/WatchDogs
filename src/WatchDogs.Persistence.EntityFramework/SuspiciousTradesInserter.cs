@@ -13,7 +13,7 @@ public class SuspiciousTradesInserter : ISuspiciousDealInserter
         _logger = logger;
     }
 
-    public async Task InsertTradeDatatoDbAsync(IEnumerable<Trade> data)
+    public async Task InsertAsync(IEnumerable<Trade> data)
     {
         try
         {
