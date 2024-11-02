@@ -19,7 +19,7 @@ public class FakeSourceWatcher : IWatcher
 
     public FakeSourceWatcher(DbContextOptions<ApplicationDbContext> dbContextOptions,
         IFakeTradeGenerator dataGenerator, ILogger<FakeSourceWatcher> logger,
-        IOptions<FakeSourceOptions> fakeSourceOptions, IUnitOfWorkFactory unitOfWorkFactory)
+        IOptions<FakeSourceOptions> fakeSourceOptions, IUnitOfWorkFactory unitOfWorkFactory, Task task)
     {
         _fakeSourceOptions = fakeSourceOptions.Value;
         _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(_fakeSourceOptions.IntervalInMilliseconds));
@@ -27,6 +27,7 @@ public class FakeSourceWatcher : IWatcher
         _logger = logger;
         _dbContextOptions = dbContextOptions;
         _unitOfWorkFactory = unitOfWorkFactory;
+        _timerTask = task;
 
     }
 
@@ -40,7 +41,7 @@ public class FakeSourceWatcher : IWatcher
             }
             else
             {
-                if(_timerTask is not null)
+                if (_timerTask is not null)
                 {
                     _cts.Cancel();
                     await _timerTask;
@@ -54,7 +55,7 @@ public class FakeSourceWatcher : IWatcher
         }
     }
 
-    private async Task LoadFakeDataEverySecondAsync()
+    public async Task LoadFakeDataEverySecondAsync()
     {
         using var unitOfWork = _unitOfWorkFactory.Create();
 
