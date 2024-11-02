@@ -1,5 +1,5 @@
 ﻿namespace WatchDogs.Contracts;
-public interface ISuspiciousDealInserter : IDataInserter
+public interface ISuspiciousDealInserter : ITradeInserter
 {
     Task SaveAsync();
 }

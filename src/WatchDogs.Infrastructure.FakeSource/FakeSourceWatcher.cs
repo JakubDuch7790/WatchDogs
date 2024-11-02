@@ -70,7 +70,7 @@ public class FakeSourceWatcher : IWatcher
 
                 _logger.LogInformation("Fake data are about to be inserted into Db.");
 
-                await unitOfWork.DataInserter.InsertAsync(tradesToInsert);
+                await unitOfWork.TradeInserter.InsertAsync(tradesToInsert);
 
                 try
                 {
