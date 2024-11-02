@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Serilog;
 using WatchDogs.Contracts;
 
 namespace WatchDogs.Persistence.EntityFramework;
@@ -6,20 +7,20 @@ namespace WatchDogs.Persistence.EntityFramework;
 public class EntityFrameworkUnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger? _logger;
     
-    public ITradeInserter DataInserter { get; }
+    public ITradeInserter TradeInserter { get; }
 
-    public EntityFrameworkUnitOfWork(DbContextOptions<ApplicationDbContext> options)
+    public EntityFrameworkUnitOfWork(DbContextOptions<ApplicationDbContext> options, ILogger logger)
     {
         _context = new ApplicationDbContext(options);
-        DataInserter = new TradeInserter(_context);
+        TradeInserter = new TradeInserter(_context, logger);
     }
 
     public async Task SaveAsync()
     {
         await _context.SaveChangesAsync();
     }
-
 
     public void Dispose()
     {

@@ -1,6 +1,7 @@
 using Contracts;
 using Infrastructure.DxTrade;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using System.Net.Http.Headers;
@@ -34,6 +35,10 @@ try
     builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 
+    //DbContext specifically for storing SuspiciousTrades
+    builder.Services.AddDbContext<SuspiciousTradesDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
+
     //Config options
     builder.Services.Configure<DxTradeConnectionOptions>(
         builder.Configuration.GetSection(nameof(DxTradeConnectionOptions)));
@@ -66,22 +71,29 @@ try
     builder.Services.AddSingleton<DxTradeClient>();
 
     //Services that query the Db
-    //builder.Services.AddTransient<ITradeInserter, TradeInserter>();
+    //builder.Services.AddTransient<ITradeInserter, TradeInserter>(); resolved by factory
     builder.Services.AddTransient<ITradeLoader, TradeLoader>();
 
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
 
+    //Logger
+
     builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-    //Logger
     builder.Services.AddSingleton(Log.Logger);
 
     //Custom Services
+
+    //Trades loading and inserting into Db
     builder.Services.AddScoped<ITradeInserter, TradeInserter>();
     builder.Services.AddScoped<IUnitOfWork, EntityFrameworkUnitOfWork>();
     builder.Services.AddSingleton<IUnitOfWorkFactory, UnitOfWorkFactory>();
 
+    //Suspicious trades inserting into Db
+    builder.Services.AddScoped<ISuspiciousDealInserter, SuspiciousTradesInserter>();
+
+    //Domain logic services
     builder.Services.AddTransient<IWatcher, FakeSourceWatcher>();
     builder.Services.AddTransient<ISuspiciousDealDetector, SuspiciousDealDetector>();
 
@@ -97,7 +109,9 @@ try
 
         var loadedTrades = await SDD.LoadDealsAsync();
 
-        await SDD.DetectSuspiciousDealsAsync(loadedTrades);
+        var SS = await SDD.DetectSuspiciousDealsAsync(loadedTrades);
+
+        await SDD.StoreSuspiciousTradesAsync(SS);
     }
 
 
