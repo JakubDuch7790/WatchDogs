@@ -17,14 +17,7 @@ namespace WatchDogs.Test
         private readonly Mock<IFakeTradeGenerator> _fakeTradeGenerator;
         private readonly DbContextOptions<ApplicationDbContext> _dbContext;
         private readonly IOptions<FakeSourceOptions> _fakeSourceOptions;
-        private Mock<Task>? _timerTask;
-        private readonly CancellationTokenSource _cts = new();
-        private Task? _taskkkk;
-
-
-
-
-
+        private readonly CancellationTokenSource _cts = new(TimeSpan.FromSeconds(5));
 
         private readonly FakeSourceWatcher _watcher;
 
@@ -33,8 +26,6 @@ namespace WatchDogs.Test
             _mockLogger = new Mock<ILogger<FakeSourceWatcher>>();
             _unitOfWorkFactory = new Mock<IUnitOfWorkFactory>();
             _fakeTradeGenerator = new Mock<IFakeTradeGenerator>();
-            _timerTask = new Mock<Task>();
-            _taskkkk = Task.CompletedTask;
 
             var fakeSourceOptions = new FakeSourceOptions { IntervalInMilliseconds = 1000 };
             _fakeSourceOptions = Options.Create(fakeSourceOptions);
@@ -50,9 +41,8 @@ namespace WatchDogs.Test
 
             mockUnitOfWorkFactory.Setup(f => f.Create()).Returns(mockUnitOfWork.Object);
 
-
             _watcher = new FakeSourceWatcher(_dbContext, _fakeTradeGenerator.Object, _mockLogger.Object,
-                _fakeSourceOptions, mockUnitOfWorkFactory.Object, _taskkkk);
+                _fakeSourceOptions, mockUnitOfWorkFactory.Object);
         }
 
         [Fact]
@@ -60,27 +50,28 @@ namespace WatchDogs.Test
         {
             //Arrange
             CancellationToken token = _cts.Token;
-            //_timerTask = Task.CompletedTask;
+
+            CancellationTokenSource ctssss = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
             //Act
-            await _watcher.StartAsync(token);
+            var SS = _watcher.StartAsync(ctssss.Token);
 
             //Assert
-            Assert.NotNull(_timerTask);
+            
         }
         [Fact]
         public async Task StartAsync_ShouldStopFunctionWhenCancellationIsRequested()
         {
             //Arrange
-            CancellationToken token = _cts.Token;
-            _cts.Cancel();
-            _timerTask = new Mock<Task>();
-            //_taskkkk = new Task();
+            CancellationTokenSource ctssss = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
             //Act
-            var task = _watcher.StartAsync(token);
+            var task = _watcher.StartAsync(ctssss.Token);
+
+            var Carinhall = task.IsCanceled;
 
             //Assert
+            Assert.True(Carinhall);
             await Assert.ThrowsAsync<OperationCanceledException>((async () => await task));
         }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Threading;
 using WatchDogs.Contracts;
 using WatchDogs.Persistence.EntityFramework;
 
@@ -19,7 +20,7 @@ public class FakeSourceWatcher : IWatcher
 
     public FakeSourceWatcher(DbContextOptions<ApplicationDbContext> dbContextOptions,
         IFakeTradeGenerator dataGenerator, ILogger<FakeSourceWatcher> logger,
-        IOptions<FakeSourceOptions> fakeSourceOptions, IUnitOfWorkFactory unitOfWorkFactory, Task task)
+        IOptions<FakeSourceOptions> fakeSourceOptions, IUnitOfWorkFactory unitOfWorkFactory)
     {
         _fakeSourceOptions = fakeSourceOptions.Value;
         _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(_fakeSourceOptions.IntervalInMilliseconds));
@@ -27,35 +28,39 @@ public class FakeSourceWatcher : IWatcher
         _logger = logger;
         _dbContextOptions = dbContextOptions;
         _unitOfWorkFactory = unitOfWorkFactory;
-        _timerTask = task;
-
     }
 
     public async Task StartAsync(CancellationToken token = default)
     {
-        try
+        while (true)
         {
-            if (!token.IsCancellationRequested)
+            token.ThrowIfCancellationRequested();
+
+            try
             {
-                _timerTask = LoadFakeDataEverySecondAsync();
-            }
-            else
-            {
-                if (_timerTask is not null)
+                if (!token.IsCancellationRequested)
                 {
-                    _cts.Cancel();
-                    await _timerTask;
-                    _cts.Dispose();
+                    _timerTask = LoadFakeDataEverySecondAsync();
+                }
+                else
+                {
+                    if (_timerTask is not null)
+                    {
+                        _cts.Cancel();
+                        await _timerTask;
+                        _cts.Dispose();
+                    }
                 }
             }
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogError("Cancelled");
+            catch (OperationCanceledException)
+            {
+                _logger.LogError("Cancelled");
+            }
+
         }
     }
 
-    public async Task LoadFakeDataEverySecondAsync()
+    private async Task LoadFakeDataEverySecondAsync()
     {
         using var unitOfWork = _unitOfWorkFactory.Create();
 
