@@ -396,3 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/src/WatchDogs.Application/.idea/.idea.WatchDogs/.idea/.gitignore
+/src/WatchDogs.Application/.idea/.idea.WatchDogs/.idea/indexLayout.xml
+/src/WatchDogs.Application/.idea/.idea.WatchDogs/.idea/vcs.xml
+/src/WatchDogs.Application/.idea/.idea.WatchDogs/.idea/.name
