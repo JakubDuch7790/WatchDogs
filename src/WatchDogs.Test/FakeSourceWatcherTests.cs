@@ -64,7 +64,8 @@ namespace WatchDogs.Test
                 It.IsAny<Exception>(),
                 It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)));
 
-            // this was causing error Unsupported expression even though in Nick's video he had it exactly same
+            // code below was causing error Unsupported expression even though in Nick's video he had it exactly same
+
             //_mockLogger.Verify(l => l.LogInformation("Task sucessfully assigned."), Times.Once);
         }
         [Fact]
