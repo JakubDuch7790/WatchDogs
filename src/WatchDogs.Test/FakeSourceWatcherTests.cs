@@ -33,7 +33,7 @@ namespace WatchDogs.Test
             var mockTradeInserter = new Mock<ITradeInserter>();
 
             mockUnitOfWork.Setup(x => x.DataInserter).Returns(mockTradeInserter.Object);
-            mockTradeInserter.Setup(x => x.InsertTradeDatatoDbAsync(It.IsAny<IEnumerable<Trade>>())).Returns(Task.CompletedTask);
+            mockTradeInserter.Setup(x => x.InsertAsync(It.IsAny<IEnumerable<Trade>>())).Returns(Task.CompletedTask);
 
             _unitOfWorkFactory.Setup(f => f.Create()).Returns(mockUnitOfWork.Object);
 
