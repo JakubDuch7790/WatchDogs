@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Threading;
 using WatchDogs.Contracts;
 using WatchDogs.Persistence.EntityFramework;
 
@@ -10,7 +11,6 @@ public class FakeSourceWatcher : IWatcher
 {
     private Task? _timerTask;
     private readonly PeriodicTimer _timer;
-    private readonly CancellationTokenSource _cts = new();
     private readonly IFakeTradeGenerator _dataGenerator;
     private readonly ILogger<FakeSourceWatcher> _logger;
     private readonly FakeSourceOptions _fakeSourceOptions;
@@ -19,7 +19,7 @@ public class FakeSourceWatcher : IWatcher
 
     public FakeSourceWatcher(DbContextOptions<ApplicationDbContext> dbContextOptions,
         IFakeTradeGenerator dataGenerator, ILogger<FakeSourceWatcher> logger,
-        IOptions<FakeSourceOptions> fakeSourceOptions, IUnitOfWorkFactory unitOfWorkFactory)
+        IOptions<FakeSourceOptions> fakeSourceOptions, IUnitOfWorkFactory unitOfWorkFactory, Task? task = null)
     {
         _fakeSourceOptions = fakeSourceOptions.Value;
         _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(_fakeSourceOptions.IntervalInMilliseconds));
@@ -27,40 +27,66 @@ public class FakeSourceWatcher : IWatcher
         _logger = logger;
         _dbContextOptions = dbContextOptions;
         _unitOfWorkFactory = unitOfWorkFactory;
-
+        _timerTask = task;
     }
 
     public async Task StartAsync(CancellationToken token = default)
     {
         try
         {
-            if (!token.IsCancellationRequested)
+            token.ThrowIfCancellationRequested();
+
+            while (!token.IsCancellationRequested)
             {
-                _timerTask = LoadFakeDataEverySecondAsync();
-            }
-            else
-            {
+
+                _timerTask = LoadFakeDataEverySecondAsync(token);
+
                 if(_timerTask is not null)
                 {
-                    _cts.Cancel();
+                    _logger.LogInformation("Task sucessfully assigned.");
+                }
+
+                await _timerTask;
+            }
+        }
+         
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError("Cancelled");
+
+            throw;
+        }
+        // code before that did not work
+
+        //catch (OperationCanceledException)
+        //{
+        //    _logger.LogError("Cancelled");
+        //}
+
+
+        finally
+        {
+            if( _timerTask is not null)
+            {
+                try
+                {
                     await _timerTask;
-                    _cts.Dispose();
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogError("Operation cancelled.");
                 }
             }
         }
-        catch (OperationCanceledException)
-        {
-            _logger.LogError("Cancelled");
-        }
     }
 
-    private async Task LoadFakeDataEverySecondAsync()
+    private async Task LoadFakeDataEverySecondAsync(CancellationToken token)
     {
         using var unitOfWork = _unitOfWorkFactory.Create();
 
         try
         {
-            while (await _timer.WaitForNextTickAsync(_cts.Token))
+            while (await _timer.WaitForNextTickAsync(token))
             {
                 _logger.LogInformation("Fake data are about to be created.");
 
@@ -69,14 +95,15 @@ public class FakeSourceWatcher : IWatcher
                 _logger.LogInformation("Fake data have been created successfully.");
 
                 _logger.LogInformation("Fake data are about to be inserted into Db.");
+                
+                await unitOfWork.DataInserter.InsertAsync(tradesToInsert);
 
-                await unitOfWork.TradeInserter.InsertAsync(tradesToInsert);
 
                 try
                 {
                     await unitOfWork.SaveAsync();
 
-                    if (_cts.Token.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         _logger.LogInformation("Cancellation requested.");
                     }

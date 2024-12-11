@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WatchDogs.Application\WatchDogs.Application.csproj" />
+    <ProjectReference Include="..\WatchDogs.Contracts\WatchDogs.Contracts.csproj" />
     <ProjectReference Include="..\WatchDogs.Infrastructure.DxTrade\WatchDogs.Infrastructure.DxTrade.csproj" />
     <ProjectReference Include="..\WatchDogs.Infrastructure.FakeSource\WatchDogs.Infrastructure.FakeSource.csproj" />
   </ItemGroup>

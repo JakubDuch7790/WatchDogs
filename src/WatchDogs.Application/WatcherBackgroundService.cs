@@ -15,5 +15,4 @@ public class WatcherBackgroundService : BackgroundService
     {
         await _watcher.StartAsync(stoppingToken);
     }
-
 }
