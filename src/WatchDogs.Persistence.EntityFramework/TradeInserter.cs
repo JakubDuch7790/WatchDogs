@@ -1,14 +1,17 @@
-﻿using WatchDogs.Contracts;
+﻿using Serilog;
+using WatchDogs.Contracts;
 
 namespace WatchDogs.Persistence.EntityFramework;
 
 public class TradeInserter : ITradeInserter
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger _logger;
 
-    public TradeInserter(ApplicationDbContext context)
+    public TradeInserter(ApplicationDbContext context, ILogger logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task InsertAsync(IEnumerable<Trade> data)
@@ -17,16 +20,10 @@ public class TradeInserter : ITradeInserter
         {
             await _context.Trades.AddRangeAsync(data);
 
-            //await _context.SaveChangesAsync();
         }
         catch (Exception ex)
         {
-            //TODO: add logging
+            _logger.Error($"{ex.Message}");
         }
-    }
-
-    private async Task AddSingleTrade(Trade trade)
-    {
-        await _context.Trades.AddAsync(trade);
     }
 }

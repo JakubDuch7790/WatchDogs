@@ -2,7 +2,7 @@
 
 public interface IUnitOfWork : IDisposable
 {
-    ITradeInserter DataInserter { get; }
+    ITradeInserter TradeInserter { get; }
 
     Task SaveAsync();
 }
