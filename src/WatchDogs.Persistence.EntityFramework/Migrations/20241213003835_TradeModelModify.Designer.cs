@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WatchDogs.Persistence.EntityFramework;
 
 #nullable disable
 
-namespace WatchDogs.Persistence.EntityFramework.Migrations.SuspiciousTradesDb
+namespace WatchDogs.Persistence.EntityFramework.Migrations
 {
-    [DbContext(typeof(SuspiciousTradesDbContext))]
-    partial class SuspiciousTradesDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20241213003835_TradeModelModify")]
+    partial class TradeModelModify
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,7 +49,7 @@ namespace WatchDogs.Persistence.EntityFramework.Migrations.SuspiciousTradesDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("SuspiciousTrades");
+                    b.ToTable("Trades");
                 });
 #pragma warning restore 612, 618
         }

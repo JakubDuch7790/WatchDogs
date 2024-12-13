@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WatchDogs.Persistence.EntityFramework;
 
@@ -11,9 +12,11 @@ using WatchDogs.Persistence.EntityFramework;
 namespace WatchDogs.Persistence.EntityFramework.Migrations.SuspiciousTradesDb
 {
     [DbContext(typeof(SuspiciousTradesDbContext))]
-    partial class SuspiciousTradesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241213004334_TradeModelModifyForSecondDBContext")]
+    partial class TradeModelModifyForSecondDBContext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
