@@ -37,7 +37,7 @@ namespace WatchDogs.Persistence.EntityFramework.Migrations.SuspiciousTradesDb
                     b.Property<int>("Action")
                         .HasColumnType("int");
 
-                    b.Property<string>("Currency")
+                    b.Property<string>("CurrencyPair")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

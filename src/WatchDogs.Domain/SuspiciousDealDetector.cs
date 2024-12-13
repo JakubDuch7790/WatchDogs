@@ -28,6 +28,30 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         return await _dataLoader.LoadAllTradesAsync();
     }
 
+    public async Task<Trade> LoadOneDealAtTimeAsync()
+    {
+        return await _dataLoader.LoadOneTradeAtTimeAsync();
+    }
+
+    // will work on one-to-many principle
+
+    // will detect and upload a detected suspicious deal into DB
+    public async Task DetectAsync(Trade incomingTrade)
+    {
+        var ss = SortCurrencyPairAsync(incomingTrade);
+
+        
+
+
+    //    relevantTrades.Where(trade => trade == incomingTrade.)
+            
+    //        context.Trades
+    //.Where(t => t.Asset == incomingTrade.Asset
+    //         && t.Timestamp >= incomingTrade.Timestamp.AddHours(-24));
+
+    }
+
+
     public async Task<List<List<Trade>>> DetectSuspiciousDealsAsync(List<Trade> trades)
     {
         List<List<Trade>> dealsAlreadyFilteredByCurrencyPairAndTimeStamp = new();
@@ -76,28 +100,44 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     }
 
     #region Currency Bucket Sort
+
+    //one-to-many-opt
+    public async Task SortCurrencyPairAsync(Trade trade)
+    {
+        if (!_currencyTradesPairs.ContainsKey(trade.CurrencyPair))
+        {
+            _currencyTradesPairs.AddOrUpdate(trade.CurrencyPair, new CurrencyBucket(trade.CurrencyPair), (currency, bucket) =>
+            {
+                bucket.Trades.Add(trade);
+
+                return bucket;
+            });
+        }
+
+        else
+        {
+            _currencyTradesPairs[trade.CurrencyPair].Trades.Add(trade);
+        }
+    }
+
     public async Task SortTradesByCurrencyPairsAsync(List<Trade> trades)
     {
 
         foreach (var trade in trades)
         {
-            if (!_currencyTradesPairs.ContainsKey(trade.Currency))
+            if (!_currencyTradesPairs.ContainsKey(trade.CurrencyPair))
             {
-                _currencyTradesPairs.AddOrUpdate(trade.Currency, new CurrencyBucket(trade.Currency), (currency, bucket) =>
+                _currencyTradesPairs.AddOrUpdate(trade.CurrencyPair, new CurrencyBucket(trade.CurrencyPair), (currency, bucket) =>
                 {
                     bucket.Trades.Add(trade);
 
                     return bucket;
                 });
-                    
-                //trade.IsProccessed = true;
             }
 
             else
             {
-                _currencyTradesPairs[trade.Currency].Trades.Add(trade);
-
-                //trade.IsProccessed = true;
+                _currencyTradesPairs[trade.CurrencyPair].Trades.Add(trade);
             }
         }
     }

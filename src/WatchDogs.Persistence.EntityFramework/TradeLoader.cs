@@ -19,8 +19,10 @@ public class TradeLoader : ITradeLoader
 
     public async Task<List<Trade>> LoadAllTradesAsync()
     {
-       return await _context.Trades.ToListAsync();
+        return await _context.Trades.ToListAsync();
     }
-
-    /*.Where(trade => trade.IsProccessed == false)*/
+    public async Task<Trade> LoadOneTradeAtTimeAsync()
+    {
+        return await _context.Trades.FirstOrDefaultAsync();
+    }
 }

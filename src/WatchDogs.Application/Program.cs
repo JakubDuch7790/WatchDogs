@@ -107,13 +107,18 @@ try
 
         var SDD = services.GetRequiredService<ISuspiciousDealDetector>();
 
+        //one-to-many optimization
+        //var loadedTrade = await SDD.LoadOneDealAtTimeAsync();
+
+        //await SDD.DetectAsync(loadedTrade);
+
+        // many-to-many (old v.)
         var loadedTrades = await SDD.LoadDealsAsync();
 
         var SS = await SDD.DetectSuspiciousDealsAsync(loadedTrades);
 
-        await SDD.StoreSuspiciousTradesAsync(SS);
+        //await SDD.StoreSuspiciousTradesAsync(SS);
     }
-
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())

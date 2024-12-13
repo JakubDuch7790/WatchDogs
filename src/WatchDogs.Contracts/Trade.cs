@@ -13,7 +13,7 @@ public record Trade
     //decimal AcountBalance,
     //TradeAction Action,
     //DateTimeOffset TimeStamp,
-    //string Currency,
+    //string CurrencyPair,
     //decimal Lot
 
 {
@@ -22,13 +22,12 @@ public record Trade
     public decimal AccountBalance { get; init; }
     public TradeAction Action { get; init; }
     public DateTimeOffset TimeStamp { get; init; }
-    public string Currency { get; init; }
+    public string CurrencyPair { get; init; }
     public decimal Lot { get; init; }
-    public bool IsProccessed { get; set; } = false;
 
     public override string ToString()
     {
-        return $"**Deal: {Id}, Balance {AccountBalance}, {Action} {Currency} {Lot} at {TimeStamp}\n";
+        return $"**Deal: {Id}, Balance {AccountBalance}, {Action} {CurrencyPair} {Lot} at {TimeStamp}\n";
     }
 
 }

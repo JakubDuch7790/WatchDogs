@@ -34,7 +34,7 @@ namespace WatchDogs.Persistence.EntityFramework.Migrations
                     b.Property<int>("Action")
                         .HasColumnType("int");
 
-                    b.Property<string>("Currency")
+                    b.Property<string>("CurrencyPair")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

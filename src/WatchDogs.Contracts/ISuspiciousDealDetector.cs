@@ -7,4 +7,10 @@ public interface ISuspiciousDealDetector
 
     Task StoreSuspiciousTradesAsync(List<List<Trade>> trades);
 
+    /// one-to-many optimization
+
+    Task DetectAsync(Trade incomingTrade);
+
+    Task<Trade> LoadOneDealAtTimeAsync();
+
 }
