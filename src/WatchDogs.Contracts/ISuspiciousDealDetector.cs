@@ -13,4 +13,6 @@ public interface ISuspiciousDealDetector
 
     Task<Trade> LoadOneDealAtTimeAsync();
 
+    Task RemoveCurrentTradeAndMoveNextAsync(Trade trade);
+
 }

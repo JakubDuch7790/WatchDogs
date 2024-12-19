@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace WatchDogs.Contracts;
 
@@ -22,12 +17,12 @@ public record Trade
     public decimal AccountBalance { get; init; }
     public TradeAction Action { get; init; }
     public DateTimeOffset TimeStamp { get; init; }
-    public string CurrencyPair { get; init; }
+    public string Currency { get; init; }
     public decimal Lot { get; init; }
 
     public override string ToString()
     {
-        return $"**Deal: {Id}, Balance {AccountBalance}, {Action} {CurrencyPair} {Lot} at {TimeStamp}\n";
+        return $"**Deal: {Id}, Balance {AccountBalance}, {Action} {Currency} {Lot} at {TimeStamp}\n";
     }
 
 }

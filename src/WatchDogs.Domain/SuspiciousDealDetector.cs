@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using WatchDogs.Contracts;
 using ILogger = Serilog.ILogger;
 
@@ -14,13 +15,16 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
     private readonly ILogger _logger;
     private readonly ISuspiciousDealInserter _suspiciousDealInserter;
 
+    private readonly ITradeHandler _tradeHandler;
+
     public ConcurrentDictionary<string, CurrencyBucket> _currencyTradesPairs = new ConcurrentDictionary<string, CurrencyBucket>();
-    public SuspiciousDealDetector(ITradeLoader dataLoader, IOptions<SuspiciousDealDetectorOptions> options, ILogger logger, ISuspiciousDealInserter suspiciousDealInserter)
+    public SuspiciousDealDetector(ITradeLoader dataLoader, IOptions<SuspiciousDealDetectorOptions> options, ILogger logger, ISuspiciousDealInserter suspiciousDealInserter, ITradeHandler tradeHandler)
     {
         _dataLoader = dataLoader;
         _suspiciousDealDetectorOptions = options.Value;
         _logger = logger;
         _suspiciousDealInserter = suspiciousDealInserter;
+        _tradeHandler = tradeHandler;
     }
 
     public async Task<List<Trade>> LoadDealsAsync()
@@ -28,29 +32,83 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
         return await _dataLoader.LoadAllTradesAsync();
     }
 
+    #region One-to-many principle
     public async Task<Trade> LoadOneDealAtTimeAsync()
     {
         return await _dataLoader.LoadOneTradeAtTimeAsync();
     }
 
-    // will work on one-to-many principle
-
-    // will detect and upload a detected suspicious deal into DB
-    public async Task DetectAsync(Trade incomingTrade)
+    public async Task RemoveCurrentTradeAndMoveNextAsync(Trade trade)
     {
-        var ss = SortCurrencyPairAsync(incomingTrade);
-
-        
-
-
-    //    relevantTrades.Where(trade => trade == incomingTrade.)
-            
-    //        context.Trades
-    //.Where(t => t.Asset == incomingTrade.Asset
-    //         && t.Timestamp >= incomingTrade.Timestamp.AddHours(-24));
-
+        await _tradeHandler.HandleTradeAsync(trade);
     }
 
+    public async Task DetectAsync(Trade incomingTrade)
+    {
+        var bucket = CurrencyBucketSort(incomingTrade);
+
+        var suspiciousTrades = CompareTradeWithBucket(incomingTrade, bucket.Trades);
+
+        SuspiciousDealsLogVisulizer(suspiciousTrades);
+    }
+
+    public CurrencyBucket CurrencyBucketSort(Trade incomingTrade)
+    {
+        var bucket = _currencyTradesPairs.GetOrAdd(incomingTrade.Currency, x => new CurrencyBucket(incomingTrade.Currency));
+        bucket.Trades.Add(incomingTrade);
+
+        return bucket;
+    }
+    private List<Trade> CompareTradeWithBucket(Trade incomingTrade, List<Trade> bucketTrades)
+    {
+        var suspiciousTrades = new List<Trade>();
+
+        foreach (var trade in bucketTrades)
+        {
+            if (trade == incomingTrade) continue;
+
+            if (IsWithinTimeTolerance(incomingTrade, trade) &&
+                IsSameAction(incomingTrade, trade) &&
+                HasSuspiciousVolumeToBalanceDifference(incomingTrade, trade))
+            {
+                suspiciousTrades.Add(trade);
+            }
+        }
+
+        return suspiciousTrades;
+    }
+
+    private bool IsWithinTimeTolerance(Trade incomingTrade, Trade tradeFromBucket)
+    {
+        return Math.Abs((incomingTrade.TimeStamp - tradeFromBucket.TimeStamp).TotalSeconds) <= TimeDifferTolerance.TotalSeconds;
+    }
+
+    private bool IsSameAction(Trade incomingTrade, Trade tradeFromBucket)
+    {
+        return incomingTrade.Action == tradeFromBucket.Action;
+    }
+
+    private bool HasSuspiciousVolumeToBalanceDifference(Trade incomingTrade, Trade tradeFromBucket)
+    {
+        var VolumeToBalanceRatio1 = VolumeToBalanceRatioCalculator(incomingTrade);
+        var VolumeToBalanceRatio2 = VolumeToBalanceRatioCalculator(tradeFromBucket);
+
+        var ratioDifference = Math.Abs(VolumeToBalanceRatio1 - VolumeToBalanceRatio2);
+
+        return Math.Abs(VolumeToBalanceRatio1 - VolumeToBalanceRatio2) < VolumeToBalanceTolerance;
+    }
+    private void SuspiciousDealsLogVisulizer(List<Trade> tradesInLists)
+    {
+        foreach (var trade in tradesInLists)
+        {
+            string tradesDetails = string.Join(", ", tradesInLists.Select(trade => trade.ToString()));
+
+            _logger.Information($"Suspicious trades detected:\n {tradesDetails}");
+        }
+    }
+
+
+    #endregion
 
     public async Task<List<List<Trade>>> DetectSuspiciousDealsAsync(List<Trade> trades)
     {
@@ -60,7 +118,7 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
         var dealsInBuckets = _currencyTradesPairs.Values;
 
-        _logger.Information($"Filtering trades into currency buckets. \n" +
+        _logger.Information($"Filtering trades into currency  . \n" +
             $"{dealsInBuckets.Count} buckets found.");
 
         foreach (var bucket in dealsInBuckets)
@@ -68,7 +126,7 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
             var tradesFromOneBucket = bucket.Trades;
 
             var filteredGroups = GroupTradesByTimestampWithTimeTolerance(tradesFromOneBucket, SuspiciousDealDetector.TimeDifferTolerance);
-
+              
             dealsAlreadyFilteredByCurrencyPairAndTimeStamp.AddRange(filteredGroups);
         }
 
@@ -101,33 +159,14 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
     #region Currency Bucket Sort
 
-    //one-to-many-opt
-    public async Task SortCurrencyPairAsync(Trade trade)
-    {
-        if (!_currencyTradesPairs.ContainsKey(trade.CurrencyPair))
-        {
-            _currencyTradesPairs.AddOrUpdate(trade.CurrencyPair, new CurrencyBucket(trade.CurrencyPair), (currency, bucket) =>
-            {
-                bucket.Trades.Add(trade);
-
-                return bucket;
-            });
-        }
-
-        else
-        {
-            _currencyTradesPairs[trade.CurrencyPair].Trades.Add(trade);
-        }
-    }
-
     public async Task SortTradesByCurrencyPairsAsync(List<Trade> trades)
     {
 
         foreach (var trade in trades)
         {
-            if (!_currencyTradesPairs.ContainsKey(trade.CurrencyPair))
+            if (!_currencyTradesPairs.ContainsKey(trade.Currency))
             {
-                _currencyTradesPairs.AddOrUpdate(trade.CurrencyPair, new CurrencyBucket(trade.CurrencyPair), (currency, bucket) =>
+                _currencyTradesPairs.AddOrUpdate(trade.Currency, new CurrencyBucket(trade.Currency), (currency, bucket) =>
                 {
                     bucket.Trades.Add(trade);
 
@@ -137,7 +176,7 @@ public class SuspiciousDealDetector : ISuspiciousDealDetector
 
             else
             {
-                _currencyTradesPairs[trade.CurrencyPair].Trades.Add(trade);
+                _currencyTradesPairs[trade.Currency].Trades.Add(trade);
             }
         }
     }

@@ -12,6 +12,10 @@ public class TradeLoader : ITradeLoader
 {
     private readonly ApplicationDbContext _context;
 
+    // Track last Trade for loading next one
+    public Guid? _lastLoadedTradeId { get; set; }
+    public Guid? _lastLoadedTradeIdd = null;
+
     public TradeLoader(ApplicationDbContext context)
     {
         _context = context;

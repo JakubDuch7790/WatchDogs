@@ -35,7 +35,7 @@ public class FakeTradeGenerator : IFakeTradeGenerator
 
         tradeModelFake = new Faker<Trade>()
             .RuleFor(u => u.Id, f => f.Finance.Random.Guid())
-            .RuleFor(u => u.CurrencyPair, GetRandomCurrencyPair)
+            .RuleFor(u => u.Currency, GetRandomCurrencyPair)
             .RuleFor(u => u.TimeStamp, (f, u) =>
             {
                 initialTimestamp = initialTimestamp.AddMilliseconds(f.Random.Int(0, 5000)); // Due to assignment, Timestamps should be closer to each other and in chronological order

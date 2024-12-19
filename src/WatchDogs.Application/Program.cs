@@ -73,6 +73,7 @@ try
     //Services that query the Db
     //builder.Services.AddTransient<ITradeInserter, TradeInserter>(); resolved by factory
     builder.Services.AddTransient<ITradeLoader, TradeLoader>();
+    builder.Services.AddTransient<ITradeHandler,  TradeHandler>();
 
     builder.Services.AddTransient<IFakeTradeGenerator, FakeTradeGenerator>();
 
@@ -108,11 +109,21 @@ try
         var SDD = services.GetRequiredService<ISuspiciousDealDetector>();
 
         //one-to-many optimization
-        //var loadedTrade = await SDD.LoadOneDealAtTimeAsync();
+        var loadedTrade = await SDD.LoadOneDealAtTimeAsync();
 
-        //await SDD.DetectAsync(loadedTrade);
+        await SDD.DetectAsync(loadedTrade);
 
-        // many-to-many (old v.)
+        var ss =  SDD.RemoveCurrentTradeAndMoveNextAsync(loadedTrade);
+
+        await ss;
+
+        var loadedTrade1 = await SDD.LoadOneDealAtTimeAsync();
+
+        await SDD.DetectAsync(loadedTrade1);
+
+        var ss1 = SDD.RemoveCurrentTradeAndMoveNextAsync(loadedTrade1);
+
+         // many-to-many (old v.)
         var loadedTrades = await SDD.LoadDealsAsync();
 
         var SS = await SDD.DetectSuspiciousDealsAsync(loadedTrades);
